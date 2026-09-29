@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>RED / WILD — A Machine in the Jungle</title>
+<meta name="description" content="RED / WILD — an editorial study of machine and nature. A vintage red aircraft in the jungle.">
+<meta name="theme-color" content="#07140e">
+
+<!-- Open Graph / соцсети.
+     Адрес ниже рассчитан на репозиторий red-wild — если назовёшь иначе, поменяй:
+     og:url и og:image должны быть полными ссылками (https://...). -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="RED / WILD — A Machine in the Jungle">
+<meta property="og:description" content="An editorial study of machine / nature.">
+<meta property="og:url" content="https://maruartspace.github.io/red-wild/">
+<meta property="og:image" content="https://maruartspace.github.io/red-wild/images/og-preview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+
+<style>
+:root {
+  --green: #10251a;
+  --green-deep: #07140e;
+  --green-soft: #294734;
+  --red: #c52b22;
+  --cream: #e8e6d8;
+  --black: #070a08;
+
+  --serif: "Instrument Serif", Georgia, serif;
+  --mono: "Space Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: auto; }
+
+/* Lenis */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+body {
+  margin: 0;
+  background: var(--green-deep);
+  color: var(--cream);
+  font-family: var(--mono);
+  overflow-x: hidden;
+  font-synthesis: none;   /* у Instrument Serif нет bold — не даём браузеру рисовать псевдо-жирный */
+}
+
+img, video {
+  display: block;
+  width: 100%;
+}
+
+/* Масштаб медиа задаёт только GSAP — в CSS трансформов нет,
+   поэтому при reduced-motion всё стоит ровно. */
+.zoom { will-change: transform; }
+
+a { color: inherit; text-decoration: none; }
+
+/* Магнитная типографика: внешний блок анимирует скролл,
+   внутренний .mag — курсор. Так они не конфликтуют. */
+.mag {
+  display: inline-block;
+  pointer-events: auto;
+}
+
+/* --------------------------------------------------
+   GLOBAL UI
+-------------------------------------------------- */
+
+.site-ui {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;      /* слой не мешает скроллу */
+  mix-blend-mode: difference;
+}
+
+.logo,
+.sound {
+  pointer-events: auto;      /* а интерактивные элементы кликаются */
+}
+
+.logo {
+  position: absolute;
+  top: 28px;
+  left: 30px;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.scene-counter {
+  position: absolute;
+  top: 28px;
+  right: 30px;
+  font-size: 11px;
+  letter-spacing: .12em;
+}
+
+.scene-counter span { opacity: .45; }
+
+.progress {
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+  width: 90px;
+  height: 1px;
+  background: rgba(255,255,255,.25);
+}
+
+.progress-fill {
+  height: 100%;
+  width: 100%;
+  background: white;
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.sound {
+  position: absolute;
+  right: 30px;
+  bottom: 22px;
+  padding: 6px 0;
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: .12em;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.sound:focus-visible,
+.logo:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
+}
+
+/* --------------------------------------------------
+   HERO
+-------------------------------------------------- */
+
+.hero {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+  background: #07140e;
+}
+
+.hero-media {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.08), rgba(0,0,0,.05) 55%, rgba(0,0,0,.38));
+  pointer-events: none;
+}
+
+.hero-title {
+  position: absolute;
+  z-index: 2;
+  left: 5vw;
+  bottom: 7vh;
+  width: 90vw;
+  pointer-events: none;
+}
+
+.hero-title h1 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(76px, 15vw, 230px);
+  font-weight: 400;
+  line-height: .76;
+  letter-spacing: -.055em;
+}
+
+.hero-title h1 em { color: var(--red); }
+
+.hero-meta {
+  position: absolute;
+  z-index: 3;
+  left: 5vw;
+  bottom: 3vh;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+/* --------------------------------------------------
+   VIDEO REVEAL
+-------------------------------------------------- */
+
+.video-reveal {
+  position: relative;
+  height: 125svh;
+  background: var(--green-deep);
+}
+
+.video-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.video-sticky video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.12);
+}
+
+.reveal-title {
+  position: absolute;
+  left: 5vw;
+  bottom: 8vh;
+  z-index: 3;
+}
+
+.reveal-title .eyebrow { margin-bottom: 18px; }
+
+.reveal-title h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(70px, 13vw, 200px);
+  line-height: .75;
+  letter-spacing: -.05em;
+}
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------
+   STATEMENT
+-------------------------------------------------- */
+
+.statement {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: 12vw 8vw;
+  background: var(--green);
+  overflow: hidden;
+}
+
+.statement-inner { max-width: 1100px; }
+
+.statement p {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(58px, 9vw, 150px);
+  line-height: .86;
+  letter-spacing: -.045em;
+}
+
+.statement .red {
+  color: var(--red);
+  font-style: italic;
+}
+
+/* --------------------------------------------------
+   MASTER
+-------------------------------------------------- */
+
+.master {
+  position: relative;
+  min-height: 145svh;
+  background: var(--green-deep);
+}
+
+.master-image-wrap {
+  position: sticky;
+  top: 8vh;
+  width: 86vw;
+  height: 80vh;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.master-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.master-label {
+  position: absolute;
+  left: 7vw;
+  top: 12vh;
+  z-index: 2;
+  font-size: 11px;
+  letter-spacing: .12em;
+}
+
+.master-title {
+  position: absolute;
+  left: 7vw;
+  bottom: 9vh;
+  z-index: 2;
+  font-family: var(--serif);
+  font-size: clamp(80px, 15vw, 220px);
+  line-height: .7;
+  letter-spacing: -.06em;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------
+   DETAIL
+-------------------------------------------------- */
+
+.detail {
+  position: relative;
+  min-height: 140svh;
+  padding: 15vh 5vw;
+  background: var(--cream);
+  color: var(--black);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  align-items: center;
+  gap: 8vw;
+}
+
+.detail-copy {
+  position: sticky;
+  top: 20vh;
+  align-self: start;
+}
+
+.detail-copy .number {
+  font-size: 10px;
+  letter-spacing: .15em;
+  margin-bottom: 30px;
+}
+
+.detail-copy h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(72px, 10vw, 150px);
+  line-height: .75;
+  letter-spacing: -.055em;
+  font-weight: 400;
+}
+
+.detail-copy p {
+  max-width: 380px;
+  margin-top: 40px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.detail-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --------------------------------------------------
+   DEEPER
+-------------------------------------------------- */
+
+.deeper {
+  position: relative;
+  height: 160svh;
+  background: var(--green-deep);
+}
+
+.deeper-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.deeper img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Центрирование через flex вместо translate(-50%,-50%),
+   чтобы GSAP-трансформы не сбивали позицию. */
+.deeper-title {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--serif);
+  font-size: clamp(90px, 18vw, 280px);
+  white-space: nowrap;
+  letter-spacing: -.065em;
+  font-style: italic;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------
+   WING
+-------------------------------------------------- */
+
+.wing {
+  min-height: 130svh;
+  background: var(--red);
+  color: var(--cream);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.wing-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: center;
+  gap: 6vw;
+  padding: 10vw 6vw;
+}
+
+.wing-image {
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}
+
+.wing-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: multiply;
+}
+
+.wing-copy { padding-right: 4vw; }
+
+.wing-copy h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(80px, 13vw, 210px);
+  line-height: .7;
+  letter-spacing: -.06em;
+}
+
+.wing-copy p {
+  max-width: 360px;
+  margin-top: 50px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* --------------------------------------------------
+   ABOVE
+-------------------------------------------------- */
+
+.above {
+  position: relative;
+  height: 120svh;
+  background: #080f0b;
+  overflow: hidden;
+}
+
+.above img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.above-copy {
+  position: absolute;
+  z-index: 2;
+  left: 5vw;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.above-copy h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(90px, 17vw, 260px);
+  font-weight: 400;
+  line-height: .7;
+  letter-spacing: -.06em;
+}
+
+/* --------------------------------------------------
+   FLIGHT
+-------------------------------------------------- */
+
+.flight {
+  position: relative;
+  height: 150svh;
+  background: var(--green-deep);
+}
+
+.flight-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.flight img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.flight-title {
+  position: absolute;
+  z-index: 2;
+  left: 5vw;
+  bottom: 8vh;
+  font-family: var(--serif);
+  font-size: clamp(90px, 17vw, 250px);
+  line-height: .7;
+  letter-spacing: -.06em;
+  pointer-events: none;
+}
+
+/* --------------------------------------------------
+   FINAL
+-------------------------------------------------- */
+
+.final {
+  position: relative;
+  height: 150svh;
+  background: var(--green-deep);
+}
+
+.final-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.final img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.final-copy {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 5vw;
+}
+
+.final-copy h2 {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(70px, 13vw, 190px);
+  line-height: .72;
+  font-weight: 400;
+  letter-spacing: -.06em;
+}
+
+.final-copy em { color: var(--red); }
+
+/* --------------------------------------------------
+   FOOTER
+-------------------------------------------------- */
+
+.footer {
+  min-height: 80vh;
+  background: var(--black);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 35px;
+}
+
+.footer-title {
+  font-family: var(--serif);
+  font-size: clamp(100px, 20vw, 300px);
+  line-height: .7;
+  letter-spacing: -.07em;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+/* --------------------------------------------------
+   MOBILE
+-------------------------------------------------- */
+
+@media (max-width: 800px) {
+
+  .logo { top: 20px; left: 20px; }
+  .scene-counter { top: 20px; right: 20px; }
+  .progress { left: 20px; bottom: 20px; }
+  .sound { right: 20px; bottom: 12px; }
+
+  .hero-title {
+    left: 20px;
+    width: calc(100% - 40px);
+    bottom: 12vh;
+  }
+
+  .hero-title h1 { font-size: 25vw; }
+
+  .statement { padding: 25vw 7vw; }
+  .statement p { font-size: 16vw; }
+
+  .master-image-wrap { width: 94vw; height: 70vh; }
+  .master-title { left: 5vw; font-size: 24vw; }
+
+  .detail { padding: 20vw 5vw; }
+  .detail-grid { grid-template-columns: 1fr; gap: 15vw; }
+  .detail-copy { position: relative; top: auto; }
+
+  .wing-grid { grid-template-columns: 1fr; padding: 18vw 6vw; }
+  .wing-copy { order: -1; }
+
+  .deeper-title { font-size: 22vw; }
+  .above-copy h2 { font-size: 23vw; }
+  .flight-title { font-size: 24vw; }
+  .final-copy h2 { font-size: 18vw; }
+
+  .footer { min-height: 65vh; }
+  .footer-bottom { flex-direction: column; gap: 15px; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ==================================================
+     FIXED UI
+================================================== -->
+
+<div class="site-ui">
+
+  <a class="logo" href="#top" id="logoLink">RED / WILD</a>
+
+  <div class="scene-counter" aria-hidden="true">
+    <span>SCENE</span>
+    <strong id="sceneNumber">01</strong>
+    <span id="sceneTotal">— 08</span>
+  </div>
+
+  <div class="progress" aria-hidden="true">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <button class="sound" id="soundToggle" type="button" aria-pressed="false">
+    SOUND / OFF
+  </button>
+
+</div>
+
+
+<!-- ==================================================
+     01 — FOREST VIDEO
+================================================== -->
+
+<section class="hero scene" id="top" data-scene="01">
+
+  <div class="hero-media">
+    <video
+      class="zoom"
+      data-zoom="1.04"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster="images/01-forest.jpg">
+      <source data-src="video/jungle.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="hero-title">
+    <h1><span class="mag">RED<br>WILD</span></h1>
+  </div>
+
+  <div class="hero-meta">A MACHINE IN THE JUNGLE</div>
+
+</section>
+
+
+<!-- ==================================================
+     02 — AIRCRAFT VIDEO
+================================================== -->
+
+<section class="video-reveal scene" data-scene="02">
+
+  <div class="video-sticky">
+
+    <video
+      class="zoom"
+      muted
+      loop
+      playsinline
+      preload="none"
+      poster="images/02-master.jpg">
+      <source data-src="video/aircraft.mp4" type="video/mp4">
+    </video>
+
+    <div class="video-overlay"></div>
+
+    <div class="reveal-title">
+      <div class="eyebrow">02 — THE RED</div>
+      <h2>THE<br>MACHINE</h2>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ==================================================
+     STATEMENT (часть сцены 02)
+================================================== -->
+
+<section class="statement scene" data-scene="02">
+  <div class="statement-inner">
+    <p>ONE MACHINE.<br><span class="red">MANY</span><br>LAYERS.</p>
+  </div>
+</section>
+
+
+<!-- ==================================================
+     03 — MASTER
+================================================== -->
+
+<section class="master scene" data-scene="03">
+
+  <div class="master-image-wrap">
+
+    <img class="master-image zoom" data-zoom="1.12" src="images/02-master.jpg"
+         alt="Vintage red aircraft in tropical rainforest" loading="lazy" decoding="async">
+
+    <div class="master-label">03 / THE RED</div>
+
+    <div class="master-title"><span class="mag">RED</span></div>
+
+  </div>
+
+</section>
+
+
+<!-- ==================================================
+     04 — MACHINE DETAIL
+================================================== -->
+
+<section class="detail scene" data-scene="04">
+
+  <div class="detail-grid">
+
+    <div class="detail-copy">
+      <div class="number">04 — THE MACHINE</div>
+      <h2>BUILT<br>TO<br>MOVE.</h2>
+      <p>A small mechanical object surrounded by a world that has no interest in machines.</p>
+    </div>
+
+    <div class="detail-image">
+      <img class="zoom" src="images/03-machine.jpg" alt="Aircraft mechanical detail" loading="lazy" decoding="async">
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ==================================================
+     05 — DEEPER
+================================================== -->
+
+<section class="deeper scene" data-scene="05">
+  <div class="deeper-sticky">
+    <img class="zoom" src="images/04-deeper.jpg" alt="Dense tropical rainforest" loading="lazy" decoding="async">
+    <div class="deeper-title"><span class="mag">DEEPER</span></div>
+  </div>
+</section>
+
+
+<!-- ==================================================
+     06 — WING
+================================================== -->
+
+<section class="wing scene" data-scene="06">
+
+  <div class="wing-grid">
+
+    <div class="wing-image">
+      <img class="zoom" src="images/05-wing.jpg" alt="Red aircraft wing in jungle" loading="lazy" decoding="async">
+    </div>
+
+    <div class="wing-copy">
+      <div class="eyebrow">06 — THE WING</div>
+      <h2>RED<br>AGAIN.</h2>
+      <p>The jungle hides the machine. The machine leaves the jungle.</p>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- ==================================================
+     07 — ABOVE
+================================================== -->
+
+<section class="above scene" data-scene="07">
+
+  <img class="zoom" data-zoom="1.1" src="images/06-above.jpg" alt="Tiny red aircraft above rainforest" loading="lazy" decoding="async">
+
+  <div class="above-copy">
+    <div class="eyebrow">07 — ABOVE</div>
+    <h2>SMALL<br>WORLD.</h2>
+  </div>
+
+</section>
+
+
+<!-- ==================================================
+     08 — FLIGHT
+================================================== -->
+
+<section class="flight scene" data-scene="08">
+  <div class="flight-sticky">
+    <img class="zoom" data-zoom="1.12" src="images/07-flight.jpg" alt="Vintage red aircraft flying over rainforest" loading="lazy" decoding="async">
+    <div class="flight-title"><span class="mag">FLIGHT</span></div>
+  </div>
+</section>
+
+
+<!-- ==================================================
+     FINAL (часть сцены 08)
+================================================== -->
+
+<section class="final scene" data-scene="08">
+  <div class="final-sticky">
+    <img class="zoom" data-zoom="1.14" src="images/08-final.jpg" alt="Red aircraft disappearing into rainforest" loading="lazy" decoding="async">
+    <div class="final-copy">
+      <h2>THE MACHINE<br><em>LEAVES.</em><br>THE JUNGLE<br>REMAINS.</h2>
+    </div>
+  </div>
+</section>
+
+
+<!-- ==================================================
+     FOOTER
+================================================== -->
+
+<footer class="footer">
+  <div class="footer-title">RED<br>/ WILD</div>
+  <div class="footer-bottom">
+    <span>AN EDITORIAL STUDY OF MACHINE / NATURE</span>
+    <span>© 2026</span>
+  </div>
+</footer>
+
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+const MOTION_OK  = "(prefers-reduced-motion: no-preference)";
+const FINE_HOVER = "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+
+const mm = gsap.matchMedia();
+let lenis = null;
+
+
+/* ==================================================
+   SCENE COUNTER — один источник правды: data-scene
+================================================== */
+
+const counter = document.getElementById("sceneNumber");
+const totalEl = document.getElementById("sceneTotal");
+const scenes  = [...document.querySelectorAll(".scene")];
+
+const uniqueScenes = [...new Set(scenes.map(s => s.dataset.scene))];
+totalEl.textContent = "— " + String(uniqueScenes.length).padStart(2, "0");
+
+const setScene = (n) => { counter.textContent = n.padStart(2, "0"); };
+
+scenes.forEach((scene) => {
+  ScrollTrigger.create({
+    trigger: scene,
+    start: "top center",
+    end: "bottom center",
+    onToggle: (self) => { if (self.isActive) setScene(scene.dataset.scene); }
+  });
+});
+
+
+/* ==================================================
+   PROGRESS
+================================================== */
+
+const progressFill = document.getElementById("progressFill");
+
+ScrollTrigger.create({
+  start: 0,
+  end: "max",
+  onUpdate: (self) => gsap.set(progressFill, { scaleX: self.progress })
+});
+
+
+/* ==================================================
+   LOGO → наверх
+================================================== */
+
+document.getElementById("logoLink").addEventListener("click", (e) => {
+  e.preventDefault();
+  if (lenis) lenis.scrollTo(0);
+  else window.scrollTo({ top: 0 });
+});
+
+
+/* ==================================================
+   VIDEO: ленивая загрузка + play/pause + звук
+   Всё управляется ScrollTrigger.
+================================================== */
+
+const videos = [...document.querySelectorAll("video")];
+const soundBtn = document.getElementById("soundToggle");
+
+let soundOn = false;
+let currentVideo = null;          // видео, чья сцена сейчас в центре экрана
+
+function loadVideo(video) {
+  if (video.dataset.loaded) return;
+  video.querySelectorAll("source[data-src]").forEach((s) => { s.src = s.dataset.src; });
+  video.load();
+  video.dataset.loaded = "1";
+}
+
+function applySound() {
+  videos.forEach((v) => { v.muted = !(soundOn && v === currentVideo); });
+  soundBtn.textContent = soundOn ? "SOUND / ON" : "SOUND / OFF";
+  soundBtn.setAttribute("aria-pressed", String(soundOn));
+}
+
+function playVideo(video) {
+  loadVideo(video);
+  const p = video.play();
+  if (p && p.catch) p.catch(() => {});
+}
+
+soundBtn.addEventListener("click", () => {
+  soundOn = !soundOn;
+  applySound();
+  if (currentVideo && currentVideo.paused) playVideo(currentVideo);
+});
+
+mm.add(MOTION_OK, () => {
+
+  videos.forEach((video) => {
+    const section = video.closest("section");
+
+    // 1) заранее грузим, когда секция в ~полэкрана от вьюпорта
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom+=50%",
+      end: "bottom top-=50%",
+      onToggle: (self) => { if (self.isActive) loadVideo(video); }
+    });
+
+    // 2) играет только когда виден
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top bottom",
+      end: "bottom top",
+      onToggle: (self) => { self.isActive ? playVideo(video) : video.pause(); }
+    });
+
+    // 3) звук — только у видео в центре экрана
+    ScrollTrigger.create({
+      trigger: section,
+      start: "top center",
+      end: "bottom center",
+      onToggle: (self) => {
+        if (self.isActive) currentVideo = video;
+        else if (currentVideo === video) currentVideo = null;
+        applySound();
+      }
+    });
+  });
+
+  return () => videos.forEach((v) => v.pause());
+});
+
+// Reduced motion: без автоплея, но видео подгружаем,
+// чтобы был виден первый кадр/постер, а не пустой блок
+mm.add("(prefers-reduced-motion: reduce)", () => {
+  videos.forEach((v) => { v.preload = "metadata"; loadVideo(v); });
+});
+
+// Вкладка скрыта — пауза, вернулись — продолжаем активное
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) videos.forEach((v) => v.pause());
+  else ScrollTrigger.refresh();
+});
+
+
+/* ==================================================
+   MOTION (только если пользователь не просил меньше анимации)
+================================================== */
+
+mm.add(MOTION_OK, () => {
+
+  /* ---------- Lenis ---------- */
+  let raf = null;
+  if (window.Lenis) {
+    lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+    lenis.on("scroll", ScrollTrigger.update);
+    raf = (time) => lenis.raf(time * 1000);
+    gsap.ticker.add(raf);
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  /* ---------- Медиа-зум: ОДНА система для всех картинок и видео ---------- */
+  document.querySelectorAll(".zoom").forEach((el) => {
+    const section = el.closest("section");
+    const isHero  = section.classList.contains("hero");
+    const from    = parseFloat(el.dataset.zoom || "1.15");
+
+    gsap.fromTo(el, { scale: from }, {
+      scale: 1,
+      ease: "none",
+      scrollTrigger: {
+        trigger: section,
+        start: isHero ? "top top" : "top bottom",
+        end: "bottom top",
+        scrub: 1.2
+      }
+    });
+  });
+
+  /* ---------- Hero ---------- */
+  gsap.fromTo(".hero-title", { y: 60, opacity: 0 }, {
+    y: 0, opacity: 1, duration: 1.6, ease: "power3.out", delay: .35
+  });
+
+  /* ---------- Заголовки по сценам ---------- */
+  const reveal = (target, trigger, from) => {
+    gsap.fromTo(target, from, {
+      x: 0, y: 0, scale: 1, opacity: 1,
+      ease: "none",
+      scrollTrigger: { trigger, start: "top 70%", end: "center center", scrub: 1 }
+    });
+  };
+
+  reveal(".reveal-title", ".video-reveal", { y: 80,  opacity: 0 });
+  reveal(".statement p",  ".statement",    { y: 120, opacity: 0 });
+  reveal(".master-title", ".master",       { x: -120, opacity: 0 });
+  reveal(".deeper-title", ".deeper",       { scale: .65, opacity: 0 });
+  reveal(".wing-copy",    ".wing",         { x: 100, opacity: 0 });
+  reveal(".above-copy h2",".above",        { y: 100, opacity: 0 });
+  reveal(".flight-title", ".flight",       { x: -150, opacity: 0 });
+  reveal(".final-copy h2",".final",        { scale: .7, opacity: 0 });
+
+  gsap.fromTo(".detail-copy h2", { y: 100 }, {
+    y: -20,
+    ease: "none",
+    scrollTrigger: { trigger: ".detail", start: "top bottom", end: "bottom top", scrub: 1 }
+  });
+
+  return () => {
+    if (lenis) { lenis.destroy(); lenis = null; }
+    if (raf) gsap.ticker.remove(raf);
+  };
+});
+
+
+/* ==================================================
+   MAGNETIC TYPOGRAPHY — только мышь, только desktop
+================================================== */
+
+mm.add(FINE_HOVER, () => {
+  const cleanups = [];
+
+  document.querySelectorAll(".mag").forEach((el) => {
+    const move = (e) => {
+      const r = el.getBoundingClientRect();
+      gsap.to(el, {
+        x: (e.clientX - r.left - r.width / 2) * .025,
+        y: (e.clientY - r.top - r.height / 2) * .025,
+        duration: .5,
+        ease: "power3.out",
+        overwrite: true
+      });
+    };
+    const leave = () => {
+      gsap.to(el, { x: 0, y: 0, duration: .8, ease: "elastic.out(1, .5)", overwrite: true });
+    };
+
+    el.addEventListener("mousemove", move);
+    el.addEventListener("mouseleave", leave);
+    cleanups.push(() => {
+      el.removeEventListener("mousemove", move);
+      el.removeEventListener("mouseleave", leave);
+      gsap.set(el, { x: 0, y: 0 });
+    });
+  });
+
+  return () => cleanups.forEach((fn) => fn());
+});
+
+
+/* ==================================================
+   REFRESH после загрузки шрифтов и картинок
+================================================== */
+
+window.addEventListener("load", () => ScrollTrigger.refresh());
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => ScrollTrigger.refresh());
+}
+</script>
+
+</body>
+</html>
