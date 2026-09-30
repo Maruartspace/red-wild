@@ -39,7 +39,8 @@
   --black: #070a08;
   --green-deep: #07140e;
   --green: #10251a;
-  --red: #c52b22;
+  --red: #a8321f;        /* rust red, sampled from the plane */
+  --red-bright: #e5533c; /* for RED / WILD words over photos */
   --cream: #e8e6d8;
   --ink: #0b120d;
 
@@ -119,7 +120,7 @@ a, button { color: inherit; font: inherit; }
   transition: color .6s ease;
 }
 
-.ui-logo, .ui-sound, .ui-top { pointer-events: auto; }
+.ui-logo, .ui-top { pointer-events: auto; }
 
 .ui-logo {
   position: absolute; top: 24px; left: var(--pad);
@@ -144,21 +145,8 @@ a, button { color: inherit; font: inherit; }
   transform: scaleX(0); transform-origin: left;
 }
 
-.ui-sound {
-  position: absolute; right: var(--pad); bottom: 18px;
-  padding: 8px 0;
-  background: none; border: 0; cursor: pointer;
-  font-size: 11px; letter-spacing: .16em;
-  display: flex; align-items: center; gap: 10px;
-}
-.ui-sound .bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 10px; }
-.ui-sound .bars i { width: 2px; height: 3px; background: currentColor; }
-.ui-sound.on .bars i { animation: bar .9s ease-in-out infinite; }
-.ui-sound.on .bars i:nth-child(2) { animation-delay: .15s; }
-.ui-sound.on .bars i:nth-child(3) { animation-delay: .3s; }
-@keyframes bar { 0%,100% { height: 3px; } 50% { height: 10px; } }
 
-.ui-sound:focus-visible, .ui-logo:focus-visible, .ui-top:focus-visible {
+.ui-logo:focus-visible, .ui-top:focus-visible {
   outline: 1px solid currentColor; outline-offset: 4px;
 }
 
@@ -408,7 +396,7 @@ a, button { color: inherit; font: inherit; }
   font-size: clamp(38px, 5.4vw, 100px);
   line-height: .98; letter-spacing: -.035em;
 }
-.final-copy em { font-style: italic; color: var(--red); }
+.final-copy em { font-style: italic; color: var(--red-bright); }
 .final-copy p + p { margin-top: .35em; }
 
 /* ---------- ABOUT ---------- */
@@ -448,7 +436,6 @@ a, button { color: inherit; font: inherit; }
 @media (max-width: 800px) {
   .ui-logo, .ui-count { top: 18px; }
   .ui-progress { bottom: 22px; width: 60px; }
-  .ui-sound { bottom: 12px; }
 
   .hero-word { font-size: 44vw; }
   .hero-copy { grid-template-columns: 1fr; bottom: 14svh; }
@@ -512,10 +499,6 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
     <span class="dim">SCENE</span><span id="sceneNum">01</span><span class="dim" id="sceneTotal">— 07</span>
   </div>
   <div class="ui-progress" aria-hidden="true"><i id="progress"></i></div>
-  <button class="ui-sound" id="sound" type="button" aria-pressed="false">
-    <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
-    <span id="soundLabel">SOUND — OFF</span>
-  </button>
 </div>
 
 <div class="grain" aria-hidden="true"></div>
@@ -523,7 +506,7 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- 01 — WILD -->
-<section class="s s-hero" id="top" data-scene="01" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.9" data-engine="0">
+<section class="s s-hero" id="top" data-scene="01" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="SCROLL">
   <div class="stage shade">
     <video class="hero-video" id="heroVideo" muted loop playsinline autoplay preload="auto"
            poster="%D0%B4%D0%B6%D1%83%D0%BD%D0%B3%D0%BB%D0%B8%20%D1%84%D0%BE%D1%82%D0%BE.jpg">
@@ -554,7 +537,7 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- 02 — THE RED (scroll turns the propeller) -->
-<section class="s s-red" data-scene="02" data-bg="#07140e" data-ui="#e8e6d8" data-cursor="SCRUB" data-jungle="0.45" data-engine="1">
+<section class="s s-red" data-scene="02" data-bg="#07140e" data-ui="#e8e6d8" data-cursor="SCRUB">
   <div class="stage shade">
     <video class="red-video" id="redVideo" muted playsinline preload="none" poster="2.jpg"
            data-scrub="propeller-scrub.mp4"
@@ -576,7 +559,7 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- 03 — THE MACHINE -->
-<section class="s s-machine" data-scene="03" data-bg="#c52b22" data-ui="#e8e6d8" data-cursor="LOOK" data-jungle="0.3" data-engine="0.35">
+<section class="s s-machine" data-scene="03" data-bg="#a8321f" data-ui="#e8e6d8" data-cursor="LOOK">
   <div class="stage">
     <div class="machine-frame shade" id="machineFrame">
       <img src="2.jpg" alt="Vintage red aircraft resting in the tropical rainforest" decoding="async">
@@ -592,7 +575,7 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- 04 — DEEPER -->
-<section class="s s-deeper" data-scene="04" data-bg="#10251a" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.75" data-engine="0">
+<section class="s s-deeper" data-scene="04" data-bg="#10251a" data-ui="#e8e6d8" data-cursor="SCROLL">
   <div class="stage shade">
     <div class="deeper-img"><img src="4.jpg" alt="Dense tropical rainforest hiding the aircraft" loading="lazy" decoding="async"></div>
     <div class="eyebrow deeper-eyebrow"><span class="ln"><span>04 — DEEPER</span></span></div>
@@ -602,7 +585,7 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- 05 — COCKPIT / WING -->
-<section class="s s-film" id="film" data-scene="05" data-bg="#e8e6d8" data-ui="#0b120d" data-cursor="LOOK" data-jungle="0.08" data-engine="0">
+<section class="s s-film" id="film" data-scene="05" data-bg="#e8e6d8" data-ui="#0b120d" data-cursor="LOOK">
   <div class="film-stage">
     <div class="film-track" id="filmTrack">
 
@@ -630,7 +613,7 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- 06 — ABOVE -->
-<section class="s s-above" data-scene="06" data-bg="#07140e" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.6" data-engine="0.15">
+<section class="s s-above" data-scene="06" data-bg="#07140e" data-ui="#e8e6d8" data-cursor="SCROLL">
   <div class="stage shade">
     <div class="above-img"><img src="6.jpg" alt="A tiny red aircraft above an endless rainforest" loading="lazy" decoding="async"></div>
     <div class="above-copy">
@@ -642,7 +625,7 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- 07 — FLIGHT -->
-<section class="s s-flight" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.7" data-engine="0.8">
+<section class="s s-flight" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="SCROLL">
   <div class="stage">
     <div class="layer shade" id="flightA">
       <img src="7.jpg" alt="Vintage red aircraft flying low over the rainforest" loading="lazy" decoding="async">
@@ -665,14 +648,14 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 
 
 <!-- ABOUT -->
-<section class="about" id="about" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="" data-jungle="0.3" data-engine="0">
+<section class="about" id="about" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="">
   <div class="eyebrow">ABOUT THE PROJECT</div>
   <p id="aboutText"><span class="name">RED / WILD</span> is a visual exploration of the relationship between engineered objects and wild environments, imagined through the presence of a vintage aircraft inside a tropical landscape.</p>
 </section>
 
 
 <!-- FOOTER -->
-<footer class="footer" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="" data-jungle="0.12" data-engine="0">
+<footer class="footer" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="">
   <div class="display footer-title">RED<br>WILD</div>
   <div class="footer-bottom">
     <span>AN EDITORIAL STUDY OF MACHINE AND NATURE</span>
@@ -682,9 +665,6 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 </footer>
 
 
-<!-- Sound sources: the videos' own audio, loaded only after SOUND is pressed -->
-<audio id="audJungle" loop preload="none" data-src="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%20%D0%B4%D0%B6%D1%83%D0%BD%D0%B3%D0%BB%D0%B8.mp4"></audio>
-<audio id="audEngine" loop preload="none" data-src="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%202.mp4"></audio>
 
 
 <script>
@@ -760,7 +740,6 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
     }
     root.style.setProperty("--ui", sec.dataset.ui);
     cursorLabel && (cursorLabel.textContent = sec.dataset.cursor || "");
-    Sound.update();
   }
 
   /* ---------------- videos: play only when visible ---------------- */
@@ -778,58 +757,6 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
     redVideo.load();
   }
 
-  /* ---------------- SOUND: jungle + engine layers mixed by scroll ---------------- */
-  const Sound = {
-    on: false, ctx: null, layers: {},
-    btn: $("#sound"), label: $("#soundLabel"),
-    init() {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return false;
-      this.ctx = new AC();
-      this.master = this.ctx.createGain();
-      this.master.gain.value = 0;
-      this.master.connect(this.ctx.destination);
-      [["jungle", "#audJungle"], ["engine", "#audEngine"]].forEach(([name, sel]) => {
-        const el = $(sel);
-        el.src = el.dataset.src; el.load();
-        const node = this.ctx.createMediaElementSource(el);
-        const g = this.ctx.createGain(); g.gain.value = 0;
-        node.connect(g).connect(this.master);
-        this.layers[name] = { el, g };
-      });
-      return true;
-    },
-    toggle() {
-      if (!this.ctx && !this.init()) return;
-      this.on = !this.on;
-      const t = this.ctx.currentTime;
-      if (this.on) {
-        this.ctx.resume();
-        Object.values(this.layers).forEach((l) => safePlay(l.el));
-        this.master.gain.cancelScheduledValues(t);
-        this.master.gain.setTargetAtTime(1, t, 0.4);
-      } else {
-        this.master.gain.cancelScheduledValues(t);
-        this.master.gain.setTargetAtTime(0, t, 0.25);
-        setTimeout(() => { if (!this.on) Object.values(this.layers).forEach((l) => l.el.pause()); }, 1200);
-      }
-      this.btn.classList.toggle("on", this.on);
-      this.btn.setAttribute("aria-pressed", String(this.on));
-      this.label.textContent = this.on ? "SOUND — ON" : "SOUND — OFF";
-      this.update();
-    },
-    engineBoost: 0,
-    update() {
-      if (!this.ctx) return;
-      const t = this.ctx.currentTime;
-      const s = activeSection;
-      const jungle = parseFloat(s.dataset.jungle || 0);
-      const engine = Math.min(1, parseFloat(s.dataset.engine || 0) * (0.55 + this.engineBoost));
-      this.layers.jungle.g.gain.setTargetAtTime(jungle * 0.9, t, 0.6);
-      this.layers.engine.g.gain.setTargetAtTime(engine * 1.6, t, 0.35);
-    }
-  };
-  $("#sound").addEventListener("click", () => Sound.toggle());
 
   /* ---------------- cursor (mouse only) ---------------- */
   const cursor = $("#cursor");
@@ -1001,24 +928,20 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
   });
 
   if (scrubMode) {
-    let target = 0, current = 0, lastProg = 0;
+    let target = 0, current = 0;
     ScrollTrigger.create({
       trigger: s2, start: "top bottom", end: "bottom top",
       onUpdate: (st) => {
         const d = redVideo.duration || 8;
         target = st.progress * (d - 0.05);
-        // how fast the visitor turns the propeller drives the engine sound
-        Sound.engineBoost = Math.min(0.9, Math.abs(st.progress - lastProg) * 60);
-        lastProg = st.progress;
       }
     });
     gsap.ticker.add(() => {
       if (!redVideo.dataset.ready || redVideo.readyState < 1) return;
       const diff = target - current;
-      if (Math.abs(diff) < 0.004) { if (Sound.engineBoost > 0.01) { Sound.engineBoost *= 0.9; Sound.update(); } return; }
+      if (Math.abs(diff) < 0.004) return;
       current += diff * 0.18;
       try { redVideo.currentTime = current; } catch (e) {}
-      Sound.update();
     });
   } else {
     ScrollTrigger.create({
@@ -1031,8 +954,8 @@ html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
   const s3 = $(".s-machine");
   const machineTitle = splitChars($("h2[data-split]", s3));
   stageTL(s3)
-    .fromTo("#machineFrame", { clipPath: "inset(46% 49.2% 46% 49.2%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power2.inOut" }, 0.12)
-    .fromTo("#machineFrame img", { scale: 1.35 }, { scale: 1, duration: 0.7 }, 0.12)
+    .fromTo("#machineFrame", { clipPath: "inset(40% 48.6% 40% 48.6%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power2.inOut" }, 0.02)
+    .fromTo("#machineFrame img", { scale: 1.35 }, { scale: 1, duration: 0.7 }, 0.02)
     .fromTo(machineTitle, { yPercent: 110 }, { yPercent: 0, stagger: 0.01, duration: 0.12, ease: "power3.out" }, 0)
     .fromTo(lines($(".machine-words", s3)), { yPercent: 110 }, { yPercent: 0, stagger: 0.08, duration: 0.1, ease: "power2.out" }, 0.62);
 
