@@ -2,25 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <title>RED / WILD — A Machine in the Jungle</title>
-<meta name="description" content="RED / WILD — an editorial study of machine and nature. A vintage red aircraft in the jungle.">
-<meta name="theme-color" content="#07140e">
+<meta name="description" content="RED / WILD — an immersive scroll story about a vintage red aircraft lost in the green.">
+<meta name="theme-color" content="#070a08">
 
-<!-- Open Graph / соцсети.
-     Адрес ниже рассчитан на репозиторий red-wild — если назовёшь иначе, поменяй:
-     og:url и og:image должны быть полными ссылками (https://...). -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="RED / WILD — A Machine in the Jungle">
-<meta property="og:description" content="An editorial study of machine / nature.">
+<meta property="og:description" content="A machine lost in the green.">
 <meta property="og:url" content="https://maruartspace.github.io/red-wild/">
 <meta property="og:image" content="https://maruartspace.github.io/red-wild/1.jpg">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RED / WILD">
+<meta name="twitter:description" content="A machine lost in the green.">
+<meta name="twitter:image" content="https://maruartspace.github.io/red-wild/1.jpg">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script>
+  /* Motion is on unless the visitor asked the system for reduced motion.
+     Without the "motion" class the page is a calm, static, fully readable layout. */
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.documentElement.classList.add("motion");
+  }
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
@@ -28,1132 +36,1085 @@
 
 <style>
 :root {
-  --green: #10251a;
+  --black: #070a08;
   --green-deep: #07140e;
-  --green-soft: #294734;
+  --green: #10251a;
   --red: #c52b22;
   --cream: #e8e6d8;
-  --black: #070a08;
+  --ink: #0b120d;
+
+  --ui: #e8e6d8;
 
   --serif: "Instrument Serif", Georgia, serif;
-  --mono: "Space Mono", monospace;
+  --mono: "Space Mono", ui-monospace, monospace;
+
+  --pad: clamp(20px, 3vw, 48px);
 }
 
-* { box-sizing: border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: auto; }
+html { background: var(--black); }
 
-/* Lenis */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-stopped { overflow: hidden; }
 
 body {
-  margin: 0;
-  background: var(--green-deep);
+  background: var(--black);
   color: var(--cream);
   font-family: var(--mono);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  font-synthesis: none;   /* у Instrument Serif нет bold — не даём браузеру рисовать псевдо-жирный */
 }
 
-img, video {
-  display: block;
-  width: 100%;
+img, video { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+a, button { color: inherit; font: inherit; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
 }
 
-/* Масштаб медиа задаёт только GSAP — в CSS трансформов нет,
-   поэтому при reduced-motion всё стоит ровно. */
-.zoom { will-change: transform; }
-
-a { color: inherit; text-decoration: none; }
-
-/* Магнитная типографика: внешний блок анимирует скролл,
-   внутренний .mag — курсор. Так они не конфликтуют. */
-.mag {
-  display: inline-block;
-  pointer-events: auto;
-}
-
-/* --------------------------------------------------
-   GLOBAL UI
--------------------------------------------------- */
-
-.site-ui {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  pointer-events: none;      /* слой не мешает скроллу */
-  mix-blend-mode: difference;
-}
-
-.logo,
-.sound {
-  pointer-events: auto;      /* а интерактивные элементы кликаются */
-}
-
-.logo {
-  position: absolute;
-  top: 28px;
-  left: 30px;
-  font-size: 12px;
-  letter-spacing: .08em;
-}
-
-.scene-counter {
-  position: absolute;
-  top: 28px;
-  right: 30px;
-  font-size: 11px;
-  letter-spacing: .12em;
-}
-
-.scene-counter span { opacity: .45; }
-
-.progress {
-  position: absolute;
-  left: 30px;
-  bottom: 30px;
-  width: 90px;
-  height: 1px;
-  background: rgba(255,255,255,.25);
-}
-
-.progress-fill {
-  height: 100%;
-  width: 100%;
-  background: white;
-  transform: scaleX(0);
-  transform-origin: left;
-}
-
-.sound {
-  position: absolute;
-  right: 30px;
-  bottom: 22px;
-  padding: 6px 0;
-  font: inherit;
-  font-size: 10px;
-  letter-spacing: .12em;
-  color: inherit;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
-
-.sound:focus-visible,
-.logo:focus-visible {
-  outline: 1px solid currentColor;
-  outline-offset: 4px;
-}
-
-/* --------------------------------------------------
-   HERO
--------------------------------------------------- */
-
-.hero {
-  position: relative;
-  height: 100svh;
-  overflow: hidden;
-  background: #07140e;
-}
-
-.hero-media {
-  position: absolute;
-  inset: 0;
-}
-
-.hero-media video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,.08), rgba(0,0,0,.05) 55%, rgba(0,0,0,.38));
-  pointer-events: none;
-}
-
-.hero-title {
-  position: absolute;
-  z-index: 2;
-  left: 5vw;
-  bottom: 7vh;
-  width: 90vw;
-  pointer-events: none;
-}
-
-.hero-title h1 {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(76px, 15vw, 230px);
-  font-weight: 400;
-  line-height: .76;
-  letter-spacing: -.055em;
-}
-
-.hero-title h1 em { color: var(--red); }
-
-.hero-meta {
-  position: absolute;
-  z-index: 3;
-  left: 5vw;
-  bottom: 3vh;
-  font-size: 10px;
-  letter-spacing: .12em;
-}
-
-/* --------------------------------------------------
-   VIDEO REVEAL
--------------------------------------------------- */
-
-.video-reveal {
-  position: relative;
-  height: 125svh;
-  background: var(--green-deep);
-}
-
-.video-sticky {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
-}
-
-.video-sticky video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.video-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,.12);
-}
-
-.reveal-title {
-  position: absolute;
-  left: 5vw;
-  bottom: 8vh;
-  z-index: 3;
-}
-
-.reveal-title .eyebrow { margin-bottom: 18px; }
-
-.reveal-title h2 {
-  margin: 0;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: clamp(70px, 13vw, 200px);
-  line-height: .75;
-  letter-spacing: -.05em;
-}
+/* ---------- type ---------- */
 
 .eyebrow {
-  font-size: 10px;
-  letter-spacing: .18em;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .16em;
   text-transform: uppercase;
 }
 
-/* --------------------------------------------------
-   STATEMENT
--------------------------------------------------- */
-
-.statement {
-  min-height: 100svh;
-  display: flex;
-  align-items: center;
-  padding: 12vw 8vw;
-  background: var(--green);
-  overflow: hidden;
-}
-
-.statement-inner { max-width: 1100px; }
-
-.statement p {
-  margin: 0;
+.display {
   font-family: var(--serif);
-  font-size: clamp(58px, 9vw, 150px);
+  font-weight: 400;
   line-height: .86;
   letter-spacing: -.045em;
 }
 
-.statement .red {
-  color: var(--red);
-  font-style: italic;
-}
-
-/* --------------------------------------------------
-   MASTER
--------------------------------------------------- */
-
-.master {
-  position: relative;
-  min-height: 145svh;
-  background: var(--green-deep);
-}
-
-.master-image-wrap {
-  position: sticky;
-  top: 8vh;
-  width: 86vw;
-  height: 80vh;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-.master-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.master-label {
-  position: absolute;
-  left: 7vw;
-  top: 12vh;
-  z-index: 2;
-  font-size: 11px;
-  letter-spacing: .12em;
-}
-
-.master-title {
-  position: absolute;
-  left: 7vw;
-  bottom: 9vh;
-  z-index: 2;
-  font-family: var(--serif);
-  font-size: clamp(80px, 15vw, 220px);
-  line-height: .7;
-  letter-spacing: -.06em;
-  pointer-events: none;
-}
-
-/* --------------------------------------------------
-   DETAIL
--------------------------------------------------- */
-
-.detail {
-  position: relative;
-  min-height: 140svh;
-  padding: 15vh 5vw;
-  background: var(--cream);
-  color: var(--black);
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.35fr;
-  align-items: center;
-  gap: 8vw;
-}
-
-.detail-copy {
-  position: sticky;
-  top: 20vh;
-  align-self: start;
-}
-
-.detail-copy .number {
-  font-size: 10px;
-  letter-spacing: .15em;
-  margin-bottom: 30px;
-}
-
-.detail-copy h2 {
-  margin: 0;
-  font-family: var(--serif);
-  font-size: clamp(72px, 10vw, 150px);
-  line-height: .75;
-  letter-spacing: -.055em;
-  font-weight: 400;
-}
-
-.detail-copy p {
-  max-width: 380px;
-  margin-top: 40px;
+.copy {
+  font-family: var(--mono);
   font-size: 14px;
-  line-height: 1.65;
+  line-height: 1.6;
+  max-width: 400px;
 }
 
-.detail-image {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-}
+.red { color: var(--red); }
 
-.detail-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+/* line mask: each authored line slides up from below */
+.ln { display: block; overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+.ln > span { display: block; }
 
-/* --------------------------------------------------
-   DEEPER
--------------------------------------------------- */
+/* char mask for big titles (filled by JS) */
+.ch { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .06em; margin-bottom: -.06em; }
+.ch > span { display: inline-block; }
 
-.deeper {
-  position: relative;
-  height: 160svh;
-  background: var(--green-deep);
-}
+/* ---------- fixed UI ---------- */
 
-.deeper-sticky {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
-}
-
-.deeper img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-}
-
-/* Центрирование через flex вместо translate(-50%,-50%),
-   чтобы GSAP-трансформы не сбивали позицию. */
-.deeper-title {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--serif);
-  font-size: clamp(90px, 18vw, 280px);
-  white-space: nowrap;
-  letter-spacing: -.065em;
-  font-style: italic;
+.ui {
+  position: fixed; inset: 0; z-index: 120;
   pointer-events: none;
+  color: var(--ui);
+  transition: color .6s ease;
 }
 
-/* --------------------------------------------------
-   WING
--------------------------------------------------- */
+.ui-logo, .ui-sound, .ui-top { pointer-events: auto; }
 
-.wing {
-  min-height: 130svh;
-  background: var(--red);
-  color: var(--cream);
-  display: flex;
-  align-items: center;
-  overflow: hidden;
+.ui-logo {
+  position: absolute; top: 24px; left: var(--pad);
+  font-size: 11px; letter-spacing: .16em; text-decoration: none;
 }
 
-.wing-grid {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  align-items: center;
-  gap: 6vw;
-  padding: 10vw 6vw;
+.ui-count {
+  position: absolute; top: 24px; right: var(--pad);
+  font-size: 11px; letter-spacing: .16em;
+  display: flex; gap: 8px;
+}
+.ui-count .dim { opacity: .45; }
+
+.ui-progress {
+  position: absolute; left: var(--pad); bottom: 26px;
+  width: 90px; height: 1px;
+  background: color-mix(in srgb, currentColor 25%, transparent);
+}
+.ui-progress i {
+  position: absolute; inset: 0;
+  background: currentColor;
+  transform: scaleX(0); transform-origin: left;
 }
 
-.wing-image {
-  overflow: hidden;
-  aspect-ratio: 1 / 1;
+.ui-sound {
+  position: absolute; right: var(--pad); bottom: 18px;
+  padding: 8px 0;
+  background: none; border: 0; cursor: pointer;
+  font-size: 11px; letter-spacing: .16em;
+  display: flex; align-items: center; gap: 10px;
+}
+.ui-sound .bars { display: inline-flex; gap: 2px; align-items: flex-end; height: 10px; }
+.ui-sound .bars i { width: 2px; height: 3px; background: currentColor; }
+.ui-sound.on .bars i { animation: bar .9s ease-in-out infinite; }
+.ui-sound.on .bars i:nth-child(2) { animation-delay: .15s; }
+.ui-sound.on .bars i:nth-child(3) { animation-delay: .3s; }
+@keyframes bar { 0%,100% { height: 3px; } 50% { height: 10px; } }
+
+.ui-sound:focus-visible, .ui-logo:focus-visible, .ui-top:focus-visible {
+  outline: 1px solid currentColor; outline-offset: 4px;
 }
 
-.wing-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+/* ---------- grain ---------- */
+
+.grain {
+  position: fixed; inset: -50%; z-index: 110;
+  pointer-events: none;
+  opacity: .075;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.motion .grain { animation: grain .9s steps(6) infinite; }
+@keyframes grain {
+  0% { transform: translate(0,0); } 20% { transform: translate(-4%,3%); }
+  40% { transform: translate(3%,-5%); } 60% { transform: translate(-6%,-2%); }
+  80% { transform: translate(5%,4%); } 100% { transform: translate(0,0); }
+}
+
+/* ---------- cursor (mouse only) ---------- */
+
+.cursor {
+  position: fixed; left: 0; top: 0; z-index: 130;
+  pointer-events: none;
+  display: none;
+  color: var(--ui);
+}
+.has-cursor .cursor { display: block; opacity: 0; transition: opacity .3s; }
+.has-cursor .cursor.live { opacity: 1; }
+.has-cursor, .has-cursor a, .has-cursor button { cursor: none; }
+.cursor-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+  transition: width .3s, height .3s;
+}
+.cursor.big .cursor-dot { width: 42px; height: 42px; background: transparent; border: 1px solid currentColor; }
+.cursor-label {
+  position: absolute; left: 16px; top: -5px;
+  font-size: 10px; letter-spacing: .16em; white-space: nowrap;
+}
+
+/* ---------- preloader ---------- */
+
+.preloader {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--black);
+  display: none;
+  flex-direction: column; justify-content: space-between;
+  padding: 24px var(--pad);
+}
+.motion .preloader { display: flex; }
+.pl-top { display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .16em; }
+.pl-num {
+  font-family: var(--serif);
+  font-size: clamp(90px, 22vw, 320px);
+  line-height: .8; letter-spacing: -.05em;
+  font-variant-numeric: tabular-nums;
+  align-self: flex-end;
+}
+.pl-bar { height: 1px; background: rgba(232,230,216,.2); margin-top: 18px; }
+.pl-bar i { display: block; height: 100%; background: var(--cream); transform: scaleX(0); transform-origin: left; }
+
+/* ---------- sections (sticky stages) ---------- */
+
+.s { position: relative; }
+.stage { position: relative; height: 100svh; overflow: hidden; }
+
+.motion .s-hero    { height: 340svh; }
+.motion .s-red     { height: 380svh; }
+.motion .s-machine { height: 320svh; }
+.motion .s-deeper  { height: 240svh; }
+.motion .s-above   { height: 280svh; }
+.motion .s-flight  { height: 440svh; }
+.motion .s .stage  { position: sticky; top: 0; }
+
+.shade::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(7,10,8,.35) 0%, rgba(7,10,8,0) 30%, rgba(7,10,8,0) 55%, rgba(7,10,8,.6) 100%);
+}
+
+/* ---------- 01 WILD ---------- */
+
+.hero-video { position: absolute; inset: 0; }
+
+.hero-mask {
+  position: absolute; inset: 0;
+  background: var(--black);
   mix-blend-mode: multiply;
-}
-
-.wing-copy { padding-right: 4vw; }
-
-.wing-copy h2 {
-  margin: 0;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: clamp(80px, 13vw, 210px);
-  line-height: .7;
-  letter-spacing: -.06em;
-}
-
-.wing-copy p {
-  max-width: 360px;
-  margin-top: 50px;
-  font-size: 14px;
-  line-height: 1.65;
-}
-
-/* --------------------------------------------------
-   ABOVE
--------------------------------------------------- */
-
-.above {
-  position: relative;
-  height: 120svh;
-  background: #080f0b;
-  overflow: hidden;
-}
-
-.above img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-}
-
-.above-copy {
-  position: absolute;
+  display: none;
+  align-items: center; justify-content: center;
   z-index: 2;
-  left: 5vw;
-  top: 50%;
-  transform: translateY(-50%);
 }
+.motion .hero-mask { display: flex; }
 
-.above-copy h2 {
-  margin: 0;
+.hero-word {
   font-family: var(--serif);
-  font-size: clamp(90px, 17vw, 260px);
-  font-weight: 400;
-  line-height: .7;
-  letter-spacing: -.06em;
+  font-size: min(40vw, 78svh);
+  line-height: .8;
+  letter-spacing: -.04em;
+  color: #fff;
+  white-space: nowrap;
+  will-change: transform;
 }
 
-/* --------------------------------------------------
-   FLIGHT
--------------------------------------------------- */
+.hero-copy {
+  position: absolute; z-index: 3;
+  left: var(--pad); right: var(--pad); bottom: 11svh;
+  display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px;
+}
+.hero-copy .display { font-size: clamp(54px, 8.4vw, 150px); font-style: italic; }
+.hero-copy .copy { max-width: 340px; }
+.hero-copy .eyebrow { margin-bottom: 22px; opacity: .8; }
 
-.flight {
-  position: relative;
-  height: 150svh;
-  background: var(--green-deep);
+.scroll-hint {
+  position: absolute; z-index: 4; left: 50%; bottom: 30px;
+  transform: translateX(-50%);
+  font-size: 10px; letter-spacing: .2em; color: var(--cream);
+  display: none;
+}
+.motion .scroll-hint { display: block; }
+.scroll-hint::after {
+  content: ""; display: block; width: 1px; height: 34px; margin: 10px auto 0;
+  background: var(--cream); transform-origin: top;
+  animation: hint 1.6s ease-in-out infinite;
+}
+@keyframes hint { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+/* ---------- 02 THE RED ---------- */
+
+.red-video { position: absolute; inset: 0; }
+
+.red-copy {
+  position: absolute; z-index: 3;
+  left: var(--pad); bottom: 10svh;
+  max-width: 760px;
+}
+.red-copy .eyebrow { margin-bottom: 20px; }
+.red-copy h2 { font-size: clamp(76px, 13vw, 220px); }
+.red-copy .copy { margin-top: 26px; }
+.red-copy .remember {
+  margin-top: 26px;
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(30px, 3.6vw, 58px); line-height: 1;
+  color: var(--cream);
+}
+.scrub-hint {
+  position: absolute; z-index: 3; right: var(--pad); bottom: 12svh;
+  font-size: 10px; letter-spacing: .2em;
+  display: none;
+}
+.motion .scrub-hint { display: block; }
+
+/* ---------- 03 THE MACHINE ---------- */
+
+.s-machine .stage { background: var(--red); }
+
+.machine-frame { position: absolute; inset: 0; z-index: 1; }
+.machine-frame img { will-change: transform; }
+
+.machine-title {
+  position: absolute; z-index: 3;
+  left: var(--pad); bottom: 9svh;
+  font-size: clamp(76px, 14vw, 240px);
+  color: var(--cream);
+}
+.machine-words {
+  position: absolute; z-index: 3;
+  right: var(--pad); top: 15svh;
+  text-align: right;
+  text-shadow: 0 2px 30px rgba(7,10,8,.35);
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(40px, 6vw, 104px); line-height: .95;
+  color: var(--cream);
 }
 
-.flight-sticky {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
+/* ---------- 04 DEEPER ---------- */
+
+.deeper-img { position: absolute; inset: 0; }
+.deeper-img img { will-change: transform; }
+.deeper-title {
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(96px, 21vw, 360px);
+  font-style: italic;
+  color: var(--cream);
+  white-space: nowrap;
+}
+.deeper-eyebrow { position: absolute; z-index: 3; left: var(--pad); top: 13svh; }
+
+/* ---------- 05 COCKPIT / WING (horizontal film) ---------- */
+
+.s-film { background: var(--cream); color: var(--ink); }
+.film-stage { position: relative; height: 100svh; overflow: hidden; display: flex; align-items: center; }
+.motion .film-stage { position: sticky; top: 0; }
+
+.film-track {
+  display: flex; align-items: center;
+  width: max-content;
+  gap: 6vw;
+  padding: 0 var(--pad);
+  will-change: transform;
 }
 
-.flight img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
+.panel { flex: 0 0 auto; position: relative; }
+.panel-img { width: min(64vw, 1100px); height: 72svh; }
+.panel-img .ph { width: 100%; height: 100%; overflow: hidden; }
+.panel-img img { width: 116%; margin-left: -8%; will-change: transform; }
+.panel-img figcaption {
+  display: flex; justify-content: space-between; gap: 20px;
+  margin-top: 16px;
 }
+.panel-img figcaption .copy { max-width: 360px; font-size: 13px; }
 
-.flight-title {
-  position: absolute;
-  z-index: 2;
-  left: 5vw;
-  bottom: 8vh;
+.panel-text { width: min(46vw, 760px); padding: 0 2vw; }
+.panel-text .eyebrow { margin-bottom: 32px; }
+.panel-text p {
   font-family: var(--serif);
-  font-size: clamp(90px, 17vw, 250px);
-  line-height: .7;
-  letter-spacing: -.06em;
-  pointer-events: none;
+  font-size: clamp(34px, 3.8vw, 66px);
+  line-height: 1.02; letter-spacing: -.02em;
 }
 
-/* --------------------------------------------------
-   FINAL
--------------------------------------------------- */
+/* ---------- 06 ABOVE ---------- */
 
-.final {
-  position: relative;
-  height: 150svh;
-  background: var(--green-deep);
-}
+.above-img { position: absolute; inset: 0; }
+.above-img img { transform-origin: 51% 50%; will-change: transform; }
+.above-copy { position: absolute; z-index: 3; left: var(--pad); top: 50%; transform: translateY(-50%); }
+.above-copy .eyebrow { margin-bottom: 22px; }
+.above-copy h2 { font-size: clamp(80px, 14vw, 240px); }
 
-.final-sticky {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  overflow: hidden;
-}
+/* ---------- 07 FLIGHT ---------- */
 
-.final img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.layer { position: absolute; inset: 0; }
+.layer img { will-change: transform; }
+.flight-copy { position: absolute; z-index: 3; left: var(--pad); bottom: 10svh; max-width: 900px; }
+.flight-copy .eyebrow { margin-bottom: 20px; }
+.flight-copy h2 { font-size: clamp(70px, 11vw, 190px); }
+.flight-copy .copy { margin-top: 26px; }
 
 .final-copy {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 5vw;
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  text-align: center; padding: 15svh var(--pad) var(--pad);
+  text-shadow: 0 2px 40px rgba(7,10,8,.45);
 }
-
-.final-copy h2 {
-  margin: 0;
+.final-copy p {
   font-family: var(--serif);
-  font-size: clamp(70px, 13vw, 190px);
-  line-height: .72;
-  font-weight: 400;
-  letter-spacing: -.06em;
+  font-size: clamp(38px, 5.4vw, 100px);
+  line-height: .98; letter-spacing: -.035em;
 }
+.final-copy em { font-style: italic; color: var(--red); }
+.final-copy p + p { margin-top: .35em; }
 
-.final-copy em { color: var(--red); }
+/* ---------- ABOUT ---------- */
 
-/* --------------------------------------------------
-   FOOTER
--------------------------------------------------- */
+.about {
+  min-height: 100svh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 18svh var(--pad);
+}
+.about .eyebrow { margin-bottom: 40px; opacity: .6; }
+.about p {
+  font-family: var(--serif);
+  font-size: clamp(30px, 4.2vw, 74px);
+  line-height: 1.04; letter-spacing: -.02em;
+  max-width: 1200px;
+}
+.about .w { display: inline-block; }
+.about .name { font-family: var(--mono); font-size: .42em; letter-spacing: .12em; vertical-align: .35em; }
+
+/* ---------- FOOTER ---------- */
 
 .footer {
-  min-height: 80vh;
-  background: var(--black);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 35px;
+  min-height: 80svh;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 16svh var(--pad) 84px;
 }
-
-.footer-title {
-  font-family: var(--serif);
-  font-size: clamp(100px, 20vw, 300px);
-  line-height: .7;
-  letter-spacing: -.07em;
-}
-
+.footer-title { font-size: clamp(110px, 22vw, 380px); line-height: .84; }
 .footer-bottom {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  letter-spacing: .12em;
+  display: flex; justify-content: space-between; align-items: center; gap: 20px;
+  font-size: 11px; letter-spacing: .16em;
+  margin-top: 60px;
 }
+.ui-top { background: none; border: 0; cursor: pointer; letter-spacing: .16em; font-size: 11px; }
 
-/* --------------------------------------------------
-   MOBILE
--------------------------------------------------- */
+/* ---------- mobile ---------- */
 
 @media (max-width: 800px) {
+  .ui-logo, .ui-count { top: 18px; }
+  .ui-progress { bottom: 22px; width: 60px; }
+  .ui-sound { bottom: 12px; }
 
-  .logo { top: 20px; left: 20px; }
-  .scene-counter { top: 20px; right: 20px; }
-  .progress { left: 20px; bottom: 20px; }
-  .sound { right: 20px; bottom: 12px; }
+  .hero-word { font-size: 44vw; }
+  .hero-copy { grid-template-columns: 1fr; bottom: 14svh; }
+  .hero-copy .display { font-size: 14vw; }
 
-  .hero-title {
-    left: 20px;
-    width: calc(100% - 40px);
-    bottom: 12vh;
-  }
+  .red-copy { right: var(--pad); bottom: 14svh; }
+  .red-copy h2 { font-size: 22vw; }
+  .red-copy .copy { font-size: 13px; }
+  .scrub-hint { right: auto; left: var(--pad); bottom: 7svh; }
 
-  .hero-title h1 { font-size: 25vw; }
+  .machine-title { font-size: 17vw; bottom: 12svh; }
+  .machine-words { top: 22svh; transform: none; font-size: 12vw; }
 
-  .statement { padding: 25vw 7vw; }
-  .statement p { font-size: 16vw; }
+  .deeper-title { font-size: 25vw; }
 
-  .master-image-wrap { width: 94vw; height: 70vh; }
-  .master-title { left: 5vw; font-size: 24vw; }
+  .panel-img { width: 84vw; height: 58svh; }
+  .panel-text { width: 80vw; }
+  .panel-text p { font-size: 8.4vw; }
+  .panel-img figcaption { flex-direction: column; gap: 8px; }
 
-  .detail { padding: 20vw 5vw; }
-  .detail-grid { grid-template-columns: 1fr; gap: 15vw; }
-  .detail-copy { position: relative; top: auto; }
+  .above-copy { top: 16svh; transform: none; }
+  .above-copy h2 { font-size: 21vw; }
+  .red-video { object-position: 74% 50%; }
+  #flightA img { object-position: 30% 50%; }
 
-  .wing-grid { grid-template-columns: 1fr; padding: 18vw 6vw; }
-  .wing-copy { order: -1; }
+  .flight-copy h2 { font-size: 17vw; }
+  .final-copy p { font-size: 10vw; }
 
-  .deeper-title { font-size: 22vw; }
-  .above-copy h2 { font-size: 23vw; }
-  .flight-title { font-size: 24vw; }
-  .final-copy h2 { font-size: 18vw; }
-
-  .footer { min-height: 65vh; }
-  .footer-bottom { flex-direction: column; gap: 15px; }
+  .about p { font-size: 8.2vw; }
+  .footer-title { font-size: 34vw; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---------- static layout (reduced motion) ---------- */
+
+html:not(.motion) .s-film .film-track { flex-direction: column; padding: 14svh var(--pad); gap: 12svh; }
+html:not(.motion) .film-stage { height: auto; }
+html:not(.motion) .panel-img, html:not(.motion) .panel-text { width: 100%; }
+html:not(.motion) .s-flight .stage { height: auto; }
+html:not(.motion) .s-flight .layer { position: relative; height: 100svh; }
 </style>
 </head>
 
 <body>
 
-<!-- ==================================================
-     FIXED UI
-================================================== -->
+<h1 class="sr-only">RED / WILD — A Machine in the Jungle</h1>
 
-<div class="site-ui">
-
-  <a class="logo" href="#top" id="logoLink">RED / WILD</a>
-
-  <div class="scene-counter" aria-hidden="true">
-    <span>SCENE</span>
-    <strong id="sceneNumber">01</strong>
-    <span id="sceneTotal">— 08</span>
+<!-- 00 — PRELOADER -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="pl-top"><span>RED / WILD</span><span>LOADING THE JUNGLE</span></div>
+  <div>
+    <div class="pl-num" id="plNum">000</div>
+    <div class="pl-bar"><i id="plBar"></i></div>
   </div>
-
-  <div class="progress" aria-hidden="true">
-    <div class="progress-fill" id="progressFill"></div>
-  </div>
-
-  <button class="sound" id="soundToggle" type="button" aria-pressed="false">
-    SOUND / OFF
-  </button>
-
 </div>
 
-
-<!-- ==================================================
-     01 — FOREST VIDEO
-================================================== -->
-
-<section class="hero scene" id="top" data-scene="01">
-
-  <div class="hero-media">
-    <video
-      class="zoom"
-      data-zoom="1.04"
-      muted
-      loop
-      playsinline
-      preload="none"
-      poster="%D0%B4%D0%B6%D1%83%D0%BD%D0%B3%D0%BB%D0%B8%20%D1%84%D0%BE%D1%82%D0%BE.jpg">
-      <source data-src="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%20%D0%B4%D0%B6%D1%83%D0%BD%D0%B3%D0%BB%D0%B8.mp4" type="video/mp4">
-    </video>
+<!-- fixed UI -->
+<div class="ui" id="ui">
+  <a class="ui-logo" href="#top" id="logo">RED / WILD</a>
+  <div class="ui-count" aria-hidden="true">
+    <span class="dim">SCENE</span><span id="sceneNum">01</span><span class="dim" id="sceneTotal">— 07</span>
   </div>
+  <div class="ui-progress" aria-hidden="true"><i id="progress"></i></div>
+  <button class="ui-sound" id="sound" type="button" aria-pressed="false">
+    <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span id="soundLabel">SOUND — OFF</span>
+  </button>
+</div>
 
-  <div class="hero-title">
-    <h1><span class="mag">RED<br>WILD</span></h1>
-  </div>
-
-  <div class="hero-meta">A MACHINE IN THE JUNGLE</div>
-
-</section>
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><div class="cursor-dot"></div><span class="cursor-label" id="cursorLabel"></span></div>
 
 
-<!-- ==================================================
-     02 — AIRCRAFT VIDEO
-================================================== -->
-
-<section class="video-reveal scene" data-scene="02">
-
-  <div class="video-sticky">
-
-    <video
-      class="zoom"
-      muted
-      loop
-      playsinline
-      preload="none"
-      poster="2.jpg">
-      <source data-src="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%202.mp4" type="video/mp4">
+<!-- 01 — WILD -->
+<section class="s s-hero" id="top" data-scene="01" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.9" data-engine="0">
+  <div class="stage shade">
+    <video class="hero-video" id="heroVideo" muted loop playsinline autoplay preload="auto"
+           poster="%D0%B4%D0%B6%D1%83%D0%BD%D0%B3%D0%BB%D0%B8%20%D1%84%D0%BE%D1%82%D0%BE.jpg">
+      <source src="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%20%D0%B4%D0%B6%D1%83%D0%BD%D0%B3%D0%BB%D0%B8.mp4" type="video/mp4">
     </video>
 
-    <div class="video-overlay"></div>
-
-    <div class="reveal-title">
-      <div class="eyebrow">02 — THE RED</div>
-      <h2>THE<br>MACHINE</h2>
+    <div class="hero-mask" aria-hidden="true">
+      <div class="hero-word" id="heroWord">W<span id="heroI">I</span>LD</div>
     </div>
 
-  </div>
-
-</section>
-
-
-<!-- ==================================================
-     STATEMENT (часть сцены 02)
-================================================== -->
-
-<section class="statement scene" data-scene="02">
-  <div class="statement-inner">
-    <p>ONE MACHINE.<br><span class="red">MANY</span><br>LAYERS.</p>
-  </div>
-</section>
-
-
-<!-- ==================================================
-     03 — MASTER
-================================================== -->
-
-<section class="master scene" data-scene="03">
-
-  <div class="master-image-wrap">
-
-    <img class="master-image zoom" data-zoom="1.12" src="2.jpg"
-         alt="Vintage red aircraft in tropical rainforest" loading="lazy" decoding="async">
-
-    <div class="master-label">03 / THE RED</div>
-
-    <div class="master-title"><span class="mag">RED</span></div>
-
-  </div>
-
-</section>
-
-
-<!-- ==================================================
-     04 — MACHINE DETAIL
-================================================== -->
-
-<section class="detail scene" data-scene="04">
-
-  <div class="detail-grid">
-
-    <div class="detail-copy">
-      <div class="number">04 — THE MACHINE</div>
-      <h2>BUILT<br>TO<br>MOVE.</h2>
-      <p>A small mechanical object surrounded by a world that has no interest in machines.</p>
+    <div class="hero-copy">
+      <div>
+        <div class="eyebrow"><span class="ln"><span>01 — WILD</span></span></div>
+        <h2 class="display">
+          <span class="ln"><span>A machine</span></span>
+          <span class="ln"><span>lost in the green.</span></span>
+        </h2>
+      </div>
+      <p class="copy">
+        <span class="ln"><span>An imagined encounter between a vintage</span></span>
+        <span class="ln"><span>aircraft and the untamed world around it.</span></span>
+      </p>
     </div>
 
-    <div class="detail-image">
-      <img class="zoom" src="3.jpg" alt="Aircraft mechanical detail" loading="lazy" decoding="async">
+    <div class="scroll-hint">SCROLL</div>
+  </div>
+</section>
+
+
+<!-- 02 — THE RED (scroll turns the propeller) -->
+<section class="s s-red" data-scene="02" data-bg="#07140e" data-ui="#e8e6d8" data-cursor="SCRUB" data-jungle="0.45" data-engine="1">
+  <div class="stage shade">
+    <video class="red-video" id="redVideo" muted playsinline preload="none" poster="2.jpg"
+           data-scrub="propeller-scrub.mp4"
+           data-play="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%202.mp4"></video>
+
+    <div class="red-copy">
+      <div class="eyebrow"><span class="ln"><span>02 — THE RED</span></span></div>
+      <h2 class="display" data-split>THE RED</h2>
+      <p class="copy">
+        <span class="ln"><span>Once built to leave the ground,</span></span>
+        <span class="ln"><span>it now rests beneath a canopy of leaves.</span></span>
+      </p>
+      <p class="remember"><span class="ln"><span>Only the propeller remembers.</span></span></p>
     </div>
 
-  </div>
-
-</section>
-
-
-<!-- ==================================================
-     05 — DEEPER
-================================================== -->
-
-<section class="deeper scene" data-scene="05">
-  <div class="deeper-sticky">
-    <img class="zoom" src="4.jpg" alt="Dense tropical rainforest" loading="lazy" decoding="async">
-    <div class="deeper-title"><span class="mag">DEEPER</span></div>
+    <div class="scrub-hint">SCROLL TO TURN THE PROPELLER</div>
   </div>
 </section>
 
 
-<!-- ==================================================
-     06 — WING
-================================================== -->
-
-<section class="wing scene" data-scene="06">
-
-  <div class="wing-grid">
-
-    <div class="wing-image">
-      <img class="zoom" src="5.jpg" alt="Red aircraft wing in jungle" loading="lazy" decoding="async">
+<!-- 03 — THE MACHINE -->
+<section class="s s-machine" data-scene="03" data-bg="#c52b22" data-ui="#e8e6d8" data-cursor="LOOK" data-jungle="0.3" data-engine="0.35">
+  <div class="stage">
+    <div class="machine-frame shade" id="machineFrame">
+      <img src="2.jpg" alt="Vintage red aircraft resting in the tropical rainforest" decoding="async">
     </div>
-
-    <div class="wing-copy">
-      <div class="eyebrow">06 — THE WING</div>
-      <h2>RED<br>AGAIN.</h2>
-      <p>The jungle hides the machine. The machine leaves the jungle.</p>
-    </div>
-
-  </div>
-
-</section>
-
-
-<!-- ==================================================
-     07 — ABOVE
-================================================== -->
-
-<section class="above scene" data-scene="07">
-
-  <img class="zoom" data-zoom="1.1" src="6.jpg" alt="Tiny red aircraft above rainforest" loading="lazy" decoding="async">
-
-  <div class="above-copy">
-    <div class="eyebrow">07 — ABOVE</div>
-    <h2>SMALL<br>WORLD.</h2>
-  </div>
-
-</section>
-
-
-<!-- ==================================================
-     08 — FLIGHT
-================================================== -->
-
-<section class="flight scene" data-scene="08">
-  <div class="flight-sticky">
-    <img class="zoom" data-zoom="1.12" src="7.jpg" alt="Vintage red aircraft flying over rainforest" loading="lazy" decoding="async">
-    <div class="flight-title"><span class="mag">FLIGHT</span></div>
+    <h2 class="display machine-title" data-split>THE MACHINE</h2>
+    <p class="machine-words">
+      <span class="ln"><span>Metal.</span></span>
+      <span class="ln"><span>Weather.</span></span>
+      <span class="ln"><span>Time.</span></span>
+    </p>
   </div>
 </section>
 
 
-<!-- ==================================================
-     FINAL (часть сцены 08)
-================================================== -->
+<!-- 04 — DEEPER -->
+<section class="s s-deeper" data-scene="04" data-bg="#10251a" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.75" data-engine="0">
+  <div class="stage shade">
+    <div class="deeper-img"><img src="4.jpg" alt="Dense tropical rainforest hiding the aircraft" loading="lazy" decoding="async"></div>
+    <div class="eyebrow deeper-eyebrow"><span class="ln"><span>04 — DEEPER</span></span></div>
+    <h2 class="display deeper-title" data-split>DEEPER</h2>
+  </div>
+</section>
 
-<section class="final scene" data-scene="08">
-  <div class="final-sticky">
-    <img class="zoom" data-zoom="1.14" src="8.jpg" alt="Red aircraft disappearing into rainforest" loading="lazy" decoding="async">
-    <div class="final-copy">
-      <h2>THE MACHINE<br><em>LEAVES.</em><br>THE JUNGLE<br>REMAINS.</h2>
+
+<!-- 05 — COCKPIT / WING -->
+<section class="s s-film" id="film" data-scene="05" data-bg="#e8e6d8" data-ui="#0b120d" data-cursor="LOOK" data-jungle="0.08" data-engine="0">
+  <div class="film-stage">
+    <div class="film-track" id="filmTrack">
+
+      <figure class="panel panel-img">
+        <div class="ph"><img src="3.jpg" alt="Close-up of the aircraft cockpit" loading="lazy" decoding="async"></div>
+        <figcaption><span class="eyebrow">05 — COCKPIT</span></figcaption>
+      </figure>
+
+      <div class="panel panel-text">
+        <div class="eyebrow">THE OBJECT</div>
+        <p>Every surface carries a trace of its former life — worn paint, exposed metal, old mechanics and the marks of time.</p>
+      </div>
+
+      <figure class="panel panel-img">
+        <div class="ph"><img src="5.jpg" alt="Red aircraft wing in the jungle" loading="lazy" decoding="async"></div>
+        <figcaption>
+          <span class="eyebrow">05 — WING</span>
+          <span class="copy">The jungle hides the machine. The machine leaves the jungle.</span>
+        </figcaption>
+      </figure>
+
     </div>
   </div>
 </section>
 
 
-<!-- ==================================================
-     FOOTER
-================================================== -->
+<!-- 06 — ABOVE -->
+<section class="s s-above" data-scene="06" data-bg="#07140e" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.6" data-engine="0.15">
+  <div class="stage shade">
+    <div class="above-img"><img src="6.jpg" alt="A tiny red aircraft above an endless rainforest" loading="lazy" decoding="async"></div>
+    <div class="above-copy">
+      <div class="eyebrow"><span class="ln"><span>06 — ABOVE</span></span></div>
+      <h2 class="display" data-split>SMALL<br>WORLD.</h2>
+    </div>
+  </div>
+</section>
 
-<footer class="footer">
-  <div class="footer-title">RED<br>WILD</div>
+
+<!-- 07 — FLIGHT -->
+<section class="s s-flight" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="SCROLL" data-jungle="0.7" data-engine="0.8">
+  <div class="stage">
+    <div class="layer shade" id="flightA">
+      <img src="7.jpg" alt="Vintage red aircraft flying low over the rainforest" loading="lazy" decoding="async">
+      <div class="flight-copy">
+        <div class="eyebrow"><span class="ln"><span>07 — FLIGHT</span></span></div>
+        <h2 class="display" data-split>BACK TO<br>THE AIR</h2>
+        <p class="copy"><span class="ln"><span>For a moment, the machine leaves the jungle behind.</span></span></p>
+      </div>
+    </div>
+
+    <div class="layer shade" id="flightB">
+      <img src="8.jpg" alt="The red aircraft disappearing over the rainforest" loading="lazy" decoding="async">
+      <div class="final-copy">
+        <p><span class="ln"><span><em>RED</em> belongs to the machine.</span></span></p>
+        <p><span class="ln"><span><em>WILD</em> belongs to everything</span></span><span class="ln"><span>around it.</span></span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ABOUT -->
+<section class="about" id="about" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="" data-jungle="0.3" data-engine="0">
+  <div class="eyebrow">ABOUT THE PROJECT</div>
+  <p id="aboutText"><span class="name">RED / WILD</span> is a visual exploration of the relationship between engineered objects and wild environments, imagined through the presence of a vintage aircraft inside a tropical landscape.</p>
+</section>
+
+
+<!-- FOOTER -->
+<footer class="footer" data-scene="07" data-bg="#070a08" data-ui="#e8e6d8" data-cursor="" data-jungle="0.12" data-engine="0">
+  <div class="display footer-title">RED<br>WILD</div>
   <div class="footer-bottom">
-    <span>AN EDITORIAL STUDY OF MACHINE / NATURE</span>
+    <span>AN EDITORIAL STUDY OF MACHINE AND NATURE</span>
     <span>© 2026</span>
+    <button class="ui-top" id="toTop" type="button">BACK TO TOP ↑</button>
   </div>
 </footer>
 
 
+<!-- Sound sources: the videos' own audio, loaded only after SOUND is pressed -->
+<audio id="audJungle" loop preload="none" data-src="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%20%D0%B4%D0%B6%D1%83%D0%BD%D0%B3%D0%BB%D0%B8.mp4"></audio>
+<audio id="audEngine" loop preload="none" data-src="%D0%B2%D0%B8%D0%B4%D0%B5%D0%BE%202.mp4"></audio>
+
+
 <script>
-gsap.registerPlugin(ScrollTrigger);
+(() => {
+  const hasGSAP = !!(window.gsap && window.ScrollTrigger);
+  const root = document.documentElement;
+  let MOTION = root.classList.contains("motion") && hasGSAP;
+  if (!hasGSAP) root.classList.remove("motion");
 
-const MOTION_OK  = "(prefers-reduced-motion: no-preference)";
-const FINE_HOVER = "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+  const $  = (s, c = document) => c.querySelector(s);
+  const $$ = (s, c = document) => [...c.querySelectorAll(s)];
 
-const mm = gsap.matchMedia();
-let lenis = null;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
 
+  const heroVideo = $("#heroVideo");
+  const redVideo  = $("#redVideo");
+  const scenes    = $$("[data-scene]");
 
-/* ==================================================
-   SCENE COUNTER — один источник правды: data-scene
-================================================== */
+  /* ---------------- split big titles into chars ---------------- */
+  function splitChars(el) {
+    const walk = (node) => {
+      [...node.childNodes].forEach((n) => {
+        if (n.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          [...n.textContent].forEach((c) => {
+            if (c === " ") { frag.appendChild(document.createTextNode(" ")); return; }
+            const o = document.createElement("span"); o.className = "ch";
+            const i = document.createElement("span"); i.textContent = c;
+            o.appendChild(i); frag.appendChild(o);
+          });
+          n.replaceWith(frag);
+        } else if (n.nodeType === 1 && n.tagName !== "BR") {
+          walk(n);
+        }
+      });
+    };
+    walk(el);
+    return $$(".ch > span", el);
+  }
 
-const counter = document.getElementById("sceneNumber");
-const totalEl = document.getElementById("sceneTotal");
-const scenes  = [...document.querySelectorAll(".scene")];
-
-const uniqueScenes = [...new Set(scenes.map(s => s.dataset.scene))];
-totalEl.textContent = "— " + String(uniqueScenes.length).padStart(2, "0");
-
-const setScene = (n) => { counter.textContent = n.padStart(2, "0"); };
-
-scenes.forEach((scene) => {
-  ScrollTrigger.create({
-    trigger: scene,
-    start: "top center",
-    end: "bottom center",
-    onToggle: (self) => { if (self.isActive) setScene(scene.dataset.scene); }
-  });
-});
-
-
-/* ==================================================
-   PROGRESS
-================================================== */
-
-const progressFill = document.getElementById("progressFill");
-
-ScrollTrigger.create({
-  start: 0,
-  end: "max",
-  onUpdate: (self) => gsap.set(progressFill, { scaleX: self.progress })
-});
-
-
-/* ==================================================
-   LOGO → наверх
-================================================== */
-
-document.getElementById("logoLink").addEventListener("click", (e) => {
-  e.preventDefault();
-  if (lenis) lenis.scrollTo(0);
-  else window.scrollTo({ top: 0 });
-});
-
-
-/* ==================================================
-   VIDEO: ленивая загрузка + play/pause + звук
-   Всё управляется ScrollTrigger.
-================================================== */
-
-const videos = [...document.querySelectorAll("video")];
-const soundBtn = document.getElementById("soundToggle");
-
-let soundOn = false;
-let currentVideo = null;          // видео, чья сцена сейчас в центре экрана
-
-function loadVideo(video) {
-  if (video.dataset.loaded) return;
-  video.querySelectorAll("source[data-src]").forEach((s) => { s.src = s.dataset.src; });
-  video.load();
-  video.dataset.loaded = "1";
-}
-
-function applySound() {
-  videos.forEach((v) => { v.muted = !(soundOn && v === currentVideo); });
-  soundBtn.textContent = soundOn ? "SOUND / ON" : "SOUND / OFF";
-  soundBtn.setAttribute("aria-pressed", String(soundOn));
-}
-
-function playVideo(video) {
-  loadVideo(video);
-  const p = video.play();
-  if (p && p.catch) p.catch(() => {});
-}
-
-soundBtn.addEventListener("click", () => {
-  soundOn = !soundOn;
-  applySound();
-  if (currentVideo && currentVideo.paused) playVideo(currentVideo);
-});
-
-mm.add(MOTION_OK, () => {
-
-  videos.forEach((video) => {
-    const section = video.closest("section");
-
-    // 1) заранее грузим, когда секция в ~полэкрана от вьюпорта
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top bottom+=50%",
-      end: "bottom top-=50%",
-      onToggle: (self) => { if (self.isActive) loadVideo(video); }
+  function splitWords(el) {
+    const out = [];
+    [...el.childNodes].forEach((n) => {
+      if (n.nodeType === 1) { n.classList.add("w"); out.push(n); return; }
+      const frag = document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach((part) => {
+        if (!part) return;
+        if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(" ")); return; }
+        const w = document.createElement("span"); w.className = "w"; w.textContent = part;
+        frag.appendChild(w); out.push(w);
+      });
+      n.replaceWith(frag);
     });
+    return out;
+  }
 
-    // 2) играет только когда виден
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top bottom",
-      end: "bottom top",
-      onToggle: (self) => { self.isActive ? playVideo(video) : video.pause(); }
-    });
+  /* ---------------- fixed UI: scene counter / colours / progress ---------------- */
+  const sceneNum = $("#sceneNum");
+  const total = new Set(scenes.map((s) => s.dataset.scene)).size;
+  $("#sceneTotal").textContent = "— " + String(total).padStart(2, "0");
 
-    // 3) звук — только у видео в центре экрана
-    ScrollTrigger.create({
-      trigger: section,
-      start: "top center",
-      end: "bottom center",
-      onToggle: (self) => {
-        if (self.isActive) currentVideo = video;
-        else if (currentVideo === video) currentVideo = null;
-        applySound();
+  let activeSection = scenes[0];
+
+  function setActive(sec) {
+    activeSection = sec;
+    sceneNum.textContent = sec.dataset.scene;
+    if (hasGSAP) {
+      gsap.to(document.body, { backgroundColor: sec.dataset.bg, duration: MOTION ? 0.9 : 0, ease: "power2.out", overwrite: true });
+    } else {
+      document.body.style.backgroundColor = sec.dataset.bg;
+    }
+    root.style.setProperty("--ui", sec.dataset.ui);
+    cursorLabel && (cursorLabel.textContent = sec.dataset.cursor || "");
+    Sound.update();
+  }
+
+  /* ---------------- videos: play only when visible ---------------- */
+  let scrubMode = false;   // true: propeller video follows the scroll
+
+  function safePlay(v) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+
+  function prepareRedVideo() {
+    if (redVideo.dataset.ready) return;
+    redVideo.dataset.ready = "1";
+    const src = scrubMode ? redVideo.dataset.scrub : redVideo.dataset.play;
+    redVideo.src = src;
+    redVideo.preload = "auto";
+    if (!scrubMode) redVideo.loop = true;
+    redVideo.load();
+  }
+
+  /* ---------------- SOUND: jungle + engine layers mixed by scroll ---------------- */
+  const Sound = {
+    on: false, ctx: null, layers: {},
+    btn: $("#sound"), label: $("#soundLabel"),
+    init() {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0;
+      this.master.connect(this.ctx.destination);
+      [["jungle", "#audJungle"], ["engine", "#audEngine"]].forEach(([name, sel]) => {
+        const el = $(sel);
+        el.src = el.dataset.src; el.load();
+        const node = this.ctx.createMediaElementSource(el);
+        const g = this.ctx.createGain(); g.gain.value = 0;
+        node.connect(g).connect(this.master);
+        this.layers[name] = { el, g };
+      });
+      return true;
+    },
+    toggle() {
+      if (!this.ctx && !this.init()) return;
+      this.on = !this.on;
+      const t = this.ctx.currentTime;
+      if (this.on) {
+        this.ctx.resume();
+        Object.values(this.layers).forEach((l) => safePlay(l.el));
+        this.master.gain.cancelScheduledValues(t);
+        this.master.gain.setTargetAtTime(1, t, 0.4);
+      } else {
+        this.master.gain.cancelScheduledValues(t);
+        this.master.gain.setTargetAtTime(0, t, 0.25);
+        setTimeout(() => { if (!this.on) Object.values(this.layers).forEach((l) => l.el.pause()); }, 1200);
       }
+      this.btn.classList.toggle("on", this.on);
+      this.btn.setAttribute("aria-pressed", String(this.on));
+      this.label.textContent = this.on ? "SOUND — ON" : "SOUND — OFF";
+      this.update();
+    },
+    engineBoost: 0,
+    update() {
+      if (!this.ctx) return;
+      const t = this.ctx.currentTime;
+      const s = activeSection;
+      const jungle = parseFloat(s.dataset.jungle || 0);
+      const engine = Math.min(1, parseFloat(s.dataset.engine || 0) * (0.55 + this.engineBoost));
+      this.layers.jungle.g.gain.setTargetAtTime(jungle * 0.9, t, 0.6);
+      this.layers.engine.g.gain.setTargetAtTime(engine * 1.6, t, 0.35);
+    }
+  };
+  $("#sound").addEventListener("click", () => Sound.toggle());
+
+  /* ---------------- cursor (mouse only) ---------------- */
+  const cursor = $("#cursor");
+  const cursorLabel = $("#cursorLabel");
+  if (finePointer && hasGSAP) {
+    root.classList.add("has-cursor");
+    const xTo = gsap.quickTo(cursor, "x", { duration: 0.35, ease: "power3" });
+    const yTo = gsap.quickTo(cursor, "y", { duration: 0.35, ease: "power3" });
+    window.addEventListener("mousemove", (e) => { cursor.classList.add("live"); xTo(e.clientX); yTo(e.clientY); });
+    document.addEventListener("mouseleave", () => cursor.classList.remove("live"));
+    $$("a, button").forEach((el) => {
+      el.addEventListener("mouseenter", () => cursor.classList.add("big"));
+      el.addEventListener("mouseleave", () => cursor.classList.remove("big"));
     });
-  });
+  }
 
-  return () => videos.forEach((v) => v.pause());
-});
+  /* ---------------- no GSAP / reduced motion: static page ---------------- */
+  if (!MOTION) {
+    $("#preloader").remove();
+    heroVideo.removeAttribute("autoplay");
+    heroVideo.pause();
+    redVideo.src = redVideo.dataset.play; redVideo.preload = "metadata";
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (e.isIntersecting && e.intersectionRatio > 0.5) setActive(e.target);
+      }), { threshold: [0.5] });
+      scenes.forEach((s) => io.observe(s));
+    }
+    $("#logo").addEventListener("click", (e) => { e.preventDefault(); window.scrollTo(0, 0); });
+    $("#toTop").addEventListener("click", () => window.scrollTo(0, 0));
+    if (hasGSAP) {
+      gsap.registerPlugin(ScrollTrigger);
+      ScrollTrigger.create({ start: 0, end: "max", onUpdate: (st) => gsap.set("#progress", { scaleX: st.progress }) });
+    }
+    return;
+  }
 
-// Reduced motion: без автоплея, но видео подгружаем,
-// чтобы был виден первый кадр/постер, а не пустой блок
-mm.add("(prefers-reduced-motion: reduce)", () => {
-  videos.forEach((v) => { v.preload = "metadata"; loadVideo(v); });
-});
+  /* ====================================================================
+     MOTION
+     ==================================================================== */
+  gsap.registerPlugin(ScrollTrigger);
+  scrubMode = !isIOS;   // iPhone/iPad: cinematic playback instead of scrub
 
-// Вкладка скрыта — пауза, вернулись — продолжаем активное
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) videos.forEach((v) => v.pause());
-  else ScrollTrigger.refresh();
-});
-
-
-/* ==================================================
-   MOTION (только если пользователь не просил меньше анимации)
-================================================== */
-
-mm.add(MOTION_OK, () => {
-
-  /* ---------- Lenis ---------- */
-  let raf = null;
+  /* Lenis smooth scroll (desktop wheel; touch stays native) */
+  let lenis = null;
   if (window.Lenis) {
     lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
     lenis.on("scroll", ScrollTrigger.update);
-    raf = (time) => lenis.raf(time * 1000);
-    gsap.ticker.add(raf);
+    gsap.ticker.add((t) => lenis.raf(t * 1000));
     gsap.ticker.lagSmoothing(0);
   }
+  const scrollTo = (y) => (lenis ? lenis.scrollTo(y, { duration: 2.2 }) : window.scrollTo(0, y));
+  $("#logo").addEventListener("click", (e) => { e.preventDefault(); scrollTo(0); });
+  $("#toTop").addEventListener("click", () => scrollTo(0));
 
-  /* ---------- Медиа-зум: ОДНА система для всех картинок и видео ---------- */
-  document.querySelectorAll(".zoom").forEach((el) => {
-    const section = el.closest("section");
-    const isHero  = section.classList.contains("hero");
-    const from    = parseFloat(el.dataset.zoom || "1.15");
+  /* scene / colour / cursor / sound state */
+  scenes.forEach((sec) => {
+    ScrollTrigger.create({
+      trigger: sec, start: "top 55%", end: "bottom 55%",
+      onToggle: (st) => st.isActive && setActive(sec)
+    });
+  });
 
-    gsap.fromTo(el, { scale: from }, {
-      scale: 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: section,
-        start: isHero ? "top top" : "top bottom",
-        end: "bottom top",
-        scrub: 1.2
+  ScrollTrigger.create({
+    start: 0, end: "max",
+    onUpdate: (st) => gsap.set("#progress", { scaleX: st.progress })
+  });
+
+  const stageTL = (sec, scrub = 0.8) => gsap.timeline({
+    defaults: { ease: "none" },
+    scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub }
+  });
+  const lines = (scope) => $$(".ln > span", scope);
+
+  /* ---------------- 00 PRELOADER ---------------- */
+  const pre = $("#preloader");
+  const plNum = $("#plNum"), plBar = $("#plBar");
+  const heroWord = $("#heroWord");
+  const heroCopy = $(".hero-copy");
+
+  if (lenis) lenis.stop();
+  document.body.style.overflow = "hidden";
+
+  gsap.set(heroWord, { yPercent: 18, opacity: 0 });
+  gsap.set(lines(heroCopy), { yPercent: 110 });
+
+  const waitFor = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
+  const tasks = [
+    waitFor(document.fonts ? document.fonts.ready : Promise.resolve(), 3000),
+    waitFor(new Promise((r) => {
+      if (heroVideo.readyState >= 2) return r();
+      heroVideo.addEventListener("loadeddata", r, { once: true });
+    }), 6000),
+    waitFor(new Promise((r) => { const i = new Image(); i.onload = i.onerror = r; i.src = "2.jpg"; }), 5000)
+  ];
+  let done = 0;
+  const shown = { v: 0 };
+  const counterTween = (target) => gsap.to(shown, {
+    v: target, duration: 0.8, ease: "power2.out", overwrite: true,
+    onUpdate: () => {
+      plNum.textContent = String(Math.round(shown.v)).padStart(3, "0");
+      gsap.set(plBar, { scaleX: shown.v / 100 });
+    }
+  });
+  counterTween(12);
+  tasks.forEach((t) => t.then(() => { done++; counterTween(Math.min(99, 12 + (done / tasks.length) * 87)); }));
+
+  const minTime = new Promise((r) => setTimeout(r, 1400));
+  Promise.all([...tasks, minTime]).then(() => {
+    gsap.timeline()
+      .to(shown, {
+        v: 100, duration: 0.5, ease: "power1.out",
+        onUpdate: () => { plNum.textContent = String(Math.round(shown.v)).padStart(3, "0"); gsap.set(plBar, { scaleX: shown.v / 100 }); }
+      })
+      .to(pre, { yPercent: -100, duration: 1.15, ease: "expo.inOut" }, "+=0.15")
+      .to(heroWord, { yPercent: 0, opacity: 1, duration: 1.4, ease: "expo.out" }, "-=0.55")
+      .add(() => {
+        pre.remove();
+        document.body.style.overflow = "";
+        if (lenis) lenis.start();
+        setOriginToI();
+        ScrollTrigger.refresh();
+      });
+    safePlay(heroVideo);
+  });
+
+  /* ---------------- 01 WILD: fly through the letters ---------------- */
+  const heroI = $("#heroI");
+  function setOriginToI() {
+    const w = heroWord.getBoundingClientRect();
+    const i = heroI.getBoundingClientRect();
+    // transform-origin must be measured without transforms
+    const sx = gsap.getProperty(heroWord, "scale");
+    const ox = (i.left + i.width * 0.5 - w.left) / sx;
+    const oy = (i.top + i.height * 0.55 - w.top) / sx;
+    gsap.set(heroWord, { transformOrigin: `${ox}px ${oy}px` });
+  }
+  setOriginToI();
+  window.addEventListener("resize", () => { gsap.set(heroWord, { scale: 1 }); setOriginToI(); ScrollTrigger.refresh(); });
+
+  const s1 = $(".s-hero");
+  stageTL(s1, 0.6)
+    .to(".scroll-hint", { opacity: 0, duration: 0.06 }, 0)
+    .fromTo(heroWord, { scale: 1 }, { scale: 60, duration: 0.55, ease: "power3.in" }, 0.02)
+    .to(".hero-mask", { opacity: 0, duration: 0.08 }, 0.5)
+    .fromTo(heroVideo, { scale: 1.18 }, { scale: 1, duration: 0.7 }, 0)
+    .to(lines(heroCopy), { yPercent: 0, stagger: 0.03, duration: 0.14, ease: "power2.out" }, 0.62);
+
+  ScrollTrigger.create({
+    trigger: s1, start: "top bottom", end: "bottom top",
+    onToggle: (st) => st.isActive ? safePlay(heroVideo) : heroVideo.pause()
+  });
+
+  /* ---------------- 02 THE RED: scroll turns the propeller ---------------- */
+  const s2 = $(".s-red");
+  const redTitle = splitChars($("h2[data-split]", s2));
+  const t2 = stageTL(s2, 0.6)
+    .fromTo(redVideo, { scale: 1.12 }, { scale: 1, duration: 1 }, 0)
+    .fromTo($(".eyebrow .ln > span", s2), { yPercent: 110 }, { yPercent: 0, duration: 0.06 }, 0.04)
+    .fromTo(redTitle, { yPercent: 110 }, { yPercent: 0, stagger: 0.012, duration: 0.12, ease: "power3.out" }, 0.06)
+    .fromTo(lines($(".copy", s2)), { yPercent: 110 }, { yPercent: 0, stagger: 0.04, duration: 0.1, ease: "power2.out" }, 0.28)
+    .fromTo(lines($(".remember", s2)), { yPercent: 110 }, { yPercent: 0, duration: 0.12, ease: "power2.out" }, 0.58)
+    .fromTo(".scrub-hint", { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.1)
+    .to(".scrub-hint", { opacity: 0, duration: 0.05 }, 0.8);
+
+  ScrollTrigger.create({
+    trigger: s2, start: "top bottom+=100%", end: "bottom top",
+    onToggle: (st) => st.isActive && prepareRedVideo()
+  });
+
+  if (scrubMode) {
+    let target = 0, current = 0, lastProg = 0;
+    ScrollTrigger.create({
+      trigger: s2, start: "top bottom", end: "bottom top",
+      onUpdate: (st) => {
+        const d = redVideo.duration || 8;
+        target = st.progress * (d - 0.05);
+        // how fast the visitor turns the propeller drives the engine sound
+        Sound.engineBoost = Math.min(0.9, Math.abs(st.progress - lastProg) * 60);
+        lastProg = st.progress;
       }
     });
-  });
-
-  /* ---------- Hero ---------- */
-  gsap.fromTo(".hero-title", { y: 60, opacity: 0 }, {
-    y: 0, opacity: 1, duration: 1.6, ease: "power3.out", delay: .35
-  });
-
-  /* ---------- Заголовки по сценам ---------- */
-  const reveal = (target, trigger, from) => {
-    gsap.fromTo(target, from, {
-      x: 0, y: 0, scale: 1, opacity: 1,
-      ease: "none",
-      scrollTrigger: { trigger, start: "top 70%", end: "center center", scrub: 1 }
+    gsap.ticker.add(() => {
+      if (!redVideo.dataset.ready || redVideo.readyState < 1) return;
+      const diff = target - current;
+      if (Math.abs(diff) < 0.004) { if (Sound.engineBoost > 0.01) { Sound.engineBoost *= 0.9; Sound.update(); } return; }
+      current += diff * 0.18;
+      try { redVideo.currentTime = current; } catch (e) {}
+      Sound.update();
     });
-  };
+  } else {
+    ScrollTrigger.create({
+      trigger: s2, start: "top bottom", end: "bottom top",
+      onToggle: (st) => { if (st.isActive) { prepareRedVideo(); safePlay(redVideo); } else redVideo.pause(); }
+    });
+  }
 
-  reveal(".reveal-title", ".video-reveal", { y: 80,  opacity: 0 });
-  reveal(".statement p",  ".statement",    { y: 120, opacity: 0 });
-  reveal(".master-title", ".master",       { x: -120, opacity: 0 });
-  reveal(".deeper-title", ".deeper",       { scale: .65, opacity: 0 });
-  reveal(".wing-copy",    ".wing",         { x: 100, opacity: 0 });
-  reveal(".above-copy h2",".above",        { y: 100, opacity: 0 });
-  reveal(".flight-title", ".flight",       { x: -150, opacity: 0 });
-  reveal(".final-copy h2",".final",        { scale: .7, opacity: 0 });
+  /* ---------------- 03 THE MACHINE: opens through a slit ---------------- */
+  const s3 = $(".s-machine");
+  const machineTitle = splitChars($("h2[data-split]", s3));
+  stageTL(s3)
+    .fromTo("#machineFrame", { clipPath: "inset(46% 49.2% 46% 49.2%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.5, ease: "power2.inOut" }, 0.12)
+    .fromTo("#machineFrame img", { scale: 1.35 }, { scale: 1, duration: 0.7 }, 0.12)
+    .fromTo(machineTitle, { yPercent: 110 }, { yPercent: 0, stagger: 0.01, duration: 0.12, ease: "power3.out" }, 0)
+    .fromTo(lines($(".machine-words", s3)), { yPercent: 110 }, { yPercent: 0, stagger: 0.08, duration: 0.1, ease: "power2.out" }, 0.62);
 
-  gsap.fromTo(".detail-copy h2", { y: 100 }, {
-    y: -20,
-    ease: "none",
-    scrollTrigger: { trigger: ".detail", start: "top bottom", end: "bottom top", scrub: 1 }
+  /* ---------------- 04 DEEPER ---------------- */
+  const s4 = $(".s-deeper");
+  const deeperTitle = splitChars($("h2[data-split]", s4));
+  stageTL(s4)
+    .fromTo($(".deeper-img img", s4), { scale: 1.3, yPercent: 4 }, { scale: 1, yPercent: 0, duration: 1 }, 0)
+    .fromTo($(".deeper-eyebrow .ln > span", s4), { yPercent: 110 }, { yPercent: 0, duration: 0.06 }, 0.08)
+    .fromTo(deeperTitle, { yPercent: 120 }, { yPercent: 0, stagger: 0.025, duration: 0.2, ease: "power3.out" }, 0.14)
+    .fromTo($(".deeper-title", s4), { scale: 0.86 }, { scale: 1.06, duration: 0.8 }, 0.14)
+    .to(deeperTitle, { yPercent: -120, stagger: 0.02, duration: 0.14, ease: "power2.in" }, 0.8);
+
+  /* ---------------- 05 COCKPIT / WING: horizontal film ---------------- */
+  const film = $("#film"), track = $("#filmTrack");
+  const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
+  const setFilmHeight = () => { film.style.height = (dist() + window.innerHeight) + "px"; };
+  setFilmHeight();
+  ScrollTrigger.addEventListener("refreshInit", setFilmHeight);
+
+  const filmTween = gsap.to(track, {
+    x: () => -dist(), ease: "none",
+    scrollTrigger: { trigger: film, start: "top top", end: "bottom bottom", scrub: 0.8, invalidateOnRefresh: true }
   });
-
-  return () => {
-    if (lenis) { lenis.destroy(); lenis = null; }
-    if (raf) gsap.ticker.remove(raf);
-  };
-});
-
-
-/* ==================================================
-   MAGNETIC TYPOGRAPHY — только мышь, только desktop
-================================================== */
-
-mm.add(FINE_HOVER, () => {
-  const cleanups = [];
-
-  document.querySelectorAll(".mag").forEach((el) => {
-    const move = (e) => {
-      const r = el.getBoundingClientRect();
-      gsap.to(el, {
-        x: (e.clientX - r.left - r.width / 2) * .025,
-        y: (e.clientY - r.top - r.height / 2) * .025,
-        duration: .5,
-        ease: "power3.out",
-        overwrite: true
-      });
-    };
-    const leave = () => {
-      gsap.to(el, { x: 0, y: 0, duration: .8, ease: "elastic.out(1, .5)", overwrite: true });
-    };
-
-    el.addEventListener("mousemove", move);
-    el.addEventListener("mouseleave", leave);
-    cleanups.push(() => {
-      el.removeEventListener("mousemove", move);
-      el.removeEventListener("mouseleave", leave);
-      gsap.set(el, { x: 0, y: 0 });
+  $$(".panel-img img", film).forEach((img) => {
+    gsap.fromTo(img, { xPercent: -6 }, {
+      xPercent: 6, ease: "none",
+      scrollTrigger: { trigger: img.closest(".panel"), containerAnimation: filmTween, start: "left right", end: "right left", scrub: true }
     });
   });
+  const objectText = $(".panel-text p", film);
+  const objectWords = splitWords(objectText);
+  gsap.fromTo(objectWords, { opacity: 0.12 }, {
+    opacity: 1, stagger: 0.05, ease: "none",
+    scrollTrigger: { trigger: objectText, containerAnimation: filmTween, start: "left 85%", end: "center 45%", scrub: true }
+  });
 
-  return () => cleanups.forEach((fn) => fn());
-});
+  /* ---------------- 06 ABOVE: the world opens around the plane ---------------- */
+  const s6 = $(".s-above");
+  const aboveTitle = splitChars($("h2[data-split]", s6));
+  stageTL(s6)
+    .fromTo($(".above-img img", s6), { scale: 2.3 }, { scale: 1, duration: 0.78, ease: "power2.inOut" }, 0)
+    .fromTo($(".above-copy .eyebrow .ln > span", s6), { yPercent: 110 }, { yPercent: 0, duration: 0.06 }, 0.5)
+    .fromTo(aboveTitle, { yPercent: 110 }, { yPercent: 0, stagger: 0.014, duration: 0.14, ease: "power3.out" }, 0.54);
 
+  /* ---------------- 07 FLIGHT → final ---------------- */
+  const s7 = $(".s-flight");
+  const flightTitle = splitChars($("h2[data-split]", s7));
+  const finalLines = lines($(".final-copy", s7));
+  stageTL(s7)
+    .fromTo("#flightA img", { scale: 1.2 }, { scale: 1, duration: 0.55 }, 0)
+    .fromTo($(".flight-copy .eyebrow .ln > span", s7), { yPercent: 110 }, { yPercent: 0, duration: 0.05 }, 0.04)
+    .fromTo(flightTitle, { yPercent: 110 }, { yPercent: 0, stagger: 0.012, duration: 0.12, ease: "power3.out" }, 0.06)
+    .fromTo(lines($(".flight-copy .copy", s7)), { yPercent: 110 }, { yPercent: 0, duration: 0.08, ease: "power2.out" }, 0.22)
+    .to(".flight-copy", { opacity: 0, y: -40, duration: 0.08 }, 0.42)
+    .fromTo("#flightB", { opacity: 0 }, { opacity: 1, duration: 0.14 }, 0.48)
+    .fromTo("#flightB img", { scale: 1.35 }, { scale: 1, duration: 0.5 }, 0.48)
+    .fromTo(finalLines, { yPercent: 110 }, { yPercent: 0, stagger: 0.05, duration: 0.12, ease: "power2.out" }, 0.66);
 
-/* ==================================================
-   REFRESH после загрузки шрифтов и картинок
-================================================== */
+  /* ---------------- ABOUT: words light up ---------------- */
+  const aboutWords = splitWords($("#aboutText"));
+  gsap.fromTo(aboutWords, { opacity: 0.14 }, {
+    opacity: 1, stagger: 0.05, ease: "none",
+    scrollTrigger: { trigger: "#about", start: "top 70%", end: "center 45%", scrub: true }
+  });
 
-window.addEventListener("load", () => ScrollTrigger.refresh());
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => ScrollTrigger.refresh());
-}
+  /* ---------------- FOOTER ---------------- */
+  const footTitle = splitChars($(".footer-title"));
+  gsap.fromTo(footTitle, { yPercent: 110 }, {
+    yPercent: 0, stagger: 0.04, ease: "power3.out", duration: 1.1,
+    scrollTrigger: { trigger: ".footer", start: "top 75%" }
+  });
+
+  /* pause work when the tab is hidden */
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { heroVideo.pause(); if (!scrubMode) redVideo.pause(); }
+    else ScrollTrigger.refresh();
+  });
+
+  window.addEventListener("load", () => ScrollTrigger.refresh());
+  if (document.fonts) document.fonts.ready.then(() => { setOriginToI(); ScrollTrigger.refresh(); });
+})();
 </script>
 
 </body>
